@@ -7,6 +7,7 @@ import com.example.helion.core.model.GuildInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 data class GuildUiState(
@@ -24,6 +25,16 @@ class GuildViewModel(private val container: HelionAppContainer) : ViewModel() {
 
     init {
         loadGuildData()
+        observeEnvironmentChanges()
+    }
+
+    private fun observeEnvironmentChanges() {
+        viewModelScope.launch {
+            container.settingsRepository.currentServerEnvironment.drop(1).collect {
+                _uiState.value = GuildUiState(isLoading = true)
+                loadGuildData()
+            }
+        }
     }
 
     fun loadGuildData() {
