@@ -19,10 +19,25 @@ This repository supports multi-environment server profiles via `ServerEnvironmen
    - `RealCompanionApi` implements `CompanionApi` for real server connectivity. Crucial Invariant: `RealCompanionApi` MUST NOT implement `DevelopmentSimulationApi`.
 3. **Environment Isolation Invariants:**
    - **Credential Isolation:** `AuthCredentialStore` partitions bearer tokens strictly by environment namespace (`token_demo`, `token_private_test`, `token_production`). Tokens never crossover between test and production.
-   - **Database Cache Isolation:** `AppDatabase` maintains independent physical SQLite database files per environment (`helion_commander_demo.db`, `helion_commander_test.db`, `helion_commander_production.db`). Test state never leaks into production.
-   - **Persistent Selection:** User selection persists via `EnvironmentPreferences`. The application does not silently switch or fallback environments if an endpoint is unreachable.
+   - **Database Cache Isolation:** `AppDatabase` maintains independent physical SQLite database files per environment (`helion_commander_demo.db`, `helion_commander_test.db`, `helion_commander_production.db`). Repository DAO providers resolve against the active environment at use time.
+   - **Observer Isolation:** Long-lived Room observers cancel and re-subscribe when the selected environment changes, preventing a screen from remaining attached to a previous environment's DAO.
+   - **In-Memory Isolation:** Commander, fleet, universe, market, UniNet, Guild, comms, and mission repository state is cleared on an environment transition before target-environment refreshes occur.
+   - **Persistent Selection:** User selection persists via `EnvironmentPreferences`. `HelionAppContainer` is the runtime routing authority and updates the settings environment flow as part of the same local transition. The application does not silently switch or fallback environments if an endpoint is unreachable.
    - **Production Safeguard:** Switching into `PRODUCTION` requires explicit user confirmation via an alert dialog in `SettingsScreen`.
-   - **Status Probing:** `ServerStatus` probe read model reports service name, server version, protocol version, and maintenance status. Unconfigured real servers report explicit unconfigured failure.
+   - **Status Probing:** `ServerStatus` probe read model reports service name, server version, protocol version, and maintenance status. DEMO is labeled as a local simulation rather than a live server. Unconfigured real servers report explicit unconfigured failure.
+   - **Simulation Boundary:** DEMO development-simulation controls follow the delegated active API. They remain available in DEMO but are unavailable through ordinary PRIVATE TEST/PRODUCTION companion paths.
+
+## M1 acceptance
+
+M1 is not complete merely because the three database files exist. Validation must cover runtime switching through the same repository instances, re-subscription of long-lived Room flows, clearing of old in-memory data, Production confirmation, credential isolation, and the DEMO-only simulation boundary.
+
+Required validation remains:
+
+```text
+gradle testDebugUnitTest
+gradle assembleDebug
+git diff --check
+```
 
 ## API discipline
 docs/COMPANION_API_CONTRACT.md is a proposal until each endpoint, authentication mechanism, DTO, and event is verified against the real server.
