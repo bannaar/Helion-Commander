@@ -33,7 +33,9 @@ class ServerUnavailableException(message: String, cause: Throwable? = null) : Ex
 class RealCompanionApi(
     val environment: ServerEnvironment,
     val endpoint: ServerEndpoint? = null,
-    private val statusProbe: NativeServerStatusProbe = TlsNativeServerStatusProbe()
+    private val statusProbe: NativeServerStatusProbe = TlsNativeServerStatusProbe(),
+    private val credentialProvider: () -> String? = { null },
+    private val commanderProfileClient: NativeCommanderProfileClient = TlsNativeCommanderProfileClient()
 ) : CompanionApi {
 
     val isConfigured: Boolean
@@ -77,8 +79,30 @@ class RealCompanionApi(
     }
 
     // Commander
-    override suspend fun getCommanderProfile(): Result<CommanderProfile> =
-        unavailableOperation("getCommanderProfile")
+    override suspend fun getCommanderProfile(): Result<CommanderProfile> {
+        val configuredEndpoint = endpoint ?: return Result.failure(
+            ServerNotConfiguredException(
+                "SERVER NOT CONFIGURED: ${environment.displayName} has no verified endpoint."
+            )
+        )
+        val token = try {
+            credentialProvider()
+        } catch (error: Exception) {
+            return Result.failure(
+                CompanionAuthenticationException(
+                    "Unable to access the stored companion credential."
+                )
+            )
+        }
+        if (token.isNullOrBlank()) {
+            return Result.failure(
+                CompanionAuthenticationRequiredException(
+                    "COMPANION AUTH REQUIRED: issue a profile.read token from a normal HELION player session and pair this environment."
+                )
+            )
+        }
+        return commanderProfileClient.fetchProfile(environment, configuredEndpoint, token)
+    }
 
     // Fleet & Ships
     override suspend fun getOwnedShips(): Result<List<OwnedShipInstance>> =
