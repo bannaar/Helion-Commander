@@ -15,8 +15,10 @@ import com.example.helion.core.network.ServerNotConfiguredException
 import com.example.helion.core.session.AuthCredentialStore
 import com.example.helion.core.session.EnvironmentPreferences
 import com.example.helion.ui.settings.SettingsViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -46,6 +48,13 @@ class ServerEnvironmentIsolationTest {
         credentialStore = AuthCredentialStore(context)
         credentialStore.clearAll()
         preferences.setSelectedEnvironment(ServerEnvironment.DEMO)
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                ServerEnvironment.values().forEach { env ->
+                    AppDatabase.getInstance(context, env).clearAllTables()
+                }
+            }
+        }
         apiFactory = DefaultCompanionApiFactory()
         container = HelionAppContainer(context)
     }
