@@ -1,10 +1,10 @@
 # HELION Commander Developer Guide
 
-**Project:** HELION Commander  
-**Platform:** Android  
-**Language:** Kotlin  
-**UI:** Jetpack Compose  
-**Status:** Incremental native-server integration alpha  
+**Project:** HELION Commander
+**Platform:** Android
+**Language:** Kotlin
+**UI:** Jetpack Compose
+**Status:** Incremental native-server integration alpha
 **Current backend routing:** `DEMO -> FakeCompanionApi`; `PRIVATE_TEST/PRODUCTION -> RealCompanionApi` with verified native TLS status plus scoped `profile.read` authentication/PROFILE reads when configured and paired
 **Architecture:** HELION server-authoritative companion client
 
