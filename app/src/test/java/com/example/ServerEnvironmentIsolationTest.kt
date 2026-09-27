@@ -185,6 +185,15 @@ class ServerEnvironmentIsolationTest {
         assertNotEquals("Bearer token must not be stored in plaintext", testToken, encryptedTest)
         assertTrue("Stored credential must use encrypted v1 envelope", encryptedTest?.startsWith("v1:") == true)
 
+        // Cryptographic isolation: moving TEST ciphertext into the Production slot must fail
+        // authentication because the environment name is bound as AES-GCM AAD.
+        rawPrefs.edit().putString("auth_token_production", encryptedTest).commit()
+        assertTrue(
+            "TEST ciphertext must not decrypt as a Production credential",
+            runCatching { credentialStore.getAuthToken(ServerEnvironment.PRODUCTION) }.isFailure
+        )
+        rawPrefs.edit().remove("auth_token_production").commit()
+
         // Verify isolation: PRODUCTION must NOT see TEST token
         assertNull("PRODUCTION must not see TEST token", credentialStore.getAuthToken(ServerEnvironment.PRODUCTION))
         assertEquals(testToken, credentialStore.getAuthToken(ServerEnvironment.PRIVATE_TEST))
