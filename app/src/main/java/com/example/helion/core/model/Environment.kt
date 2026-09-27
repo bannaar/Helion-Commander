@@ -9,16 +9,16 @@ enum class HelionEnvironment(
 ) {
     PRODUCTION(
         displayName = "PRODUCTION (HELION-1)",
-        serverEndpoint = "NOT_CONNECTED",
+        serverEndpoint = "BUILD_CONFIGURED_NATIVE_TLS",
         isAuthoritativeProd = true,
-        description = "Production target profile. This prototype build is not connected to the live HELION server.",
+        description = "Production target profile. Configured builds support verified native TLS status and scoped companion PROFILE reads.",
         serverEnv = ServerEnvironment.PRODUCTION
     ),
     PRIVATE_TEST(
         displayName = "TEST (LAB-SEC-7)",
         serverEndpoint = "NOT_CONNECTED",
         isAuthoritativeProd = false,
-        description = "Private-test target profile. This prototype build currently uses local mock data.",
+        description = "Private-test target profile. Configured builds support verified native TLS status and scoped companion PROFILE reads without DEMO fallback.",
         serverEnv = ServerEnvironment.PRIVATE_TEST
     ),
     DEVELOPMENT(
