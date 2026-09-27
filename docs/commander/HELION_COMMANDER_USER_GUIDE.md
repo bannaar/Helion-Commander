@@ -327,17 +327,21 @@ Current mission state and history are demonstration data.
 
 ## 16. Settings
 
-The current prototype includes environment concepts such as:
+The current prototype provides explicit environment selection:
 
 ```text
-DEVELOPMENT
+DEMO / OFFLINE
 PRIVATE TEST
 PRODUCTION
 ```
 
-These currently describe target environments.
+The environment badge identifies the active target.
 
-They do **not** mean Commander is already connected to those servers.
+- **DEMO / OFFLINE** uses local simulated data.
+- **PRIVATE TEST** selects the isolated test namespace but is currently **NOT CONNECTED**.
+- **PRODUCTION** selects the persistent-universe target namespace but is currently **NOT CONNECTED**.
+
+Selecting PRIVATE TEST or PRODUCTION does not fabricate a connection. Their local caches, local planning state, and credential namespaces are isolated from each other and from DEMO. Switching into Production requires an explicit confirmation.
 
 ---
 
@@ -357,30 +361,20 @@ Commander must not pretend an authoritative server action succeeded while offlin
 
 ---
 
-## 18. Planned Server Selection
+## 18. Server Selection
 
-A planned development milestone will provide clear selection between:
-
-```text
-DEMO / OFFLINE
-PRIVATE TEST
-PRODUCTION
-```
-
-Expected behavior:
+Server selection is implemented as part of the Multi-Environment Server Foundation.
 
 ### DEMO / OFFLINE
-Uses local simulated data.
+Uses local simulated data and is clearly marked as a local simulation.
 
 ### PRIVATE TEST
-Will connect to the private HELION test universe when real integration exists.
+Uses a separate TEST database/cache and credential namespace. The real TEST companion endpoint is not configured yet, so live TEST requests report unavailable/not configured rather than falling back to DEMO.
 
 ### PRODUCTION
-Will connect to the persistent live HELION universe when real integration exists.
+Uses a separate Production database/cache and credential namespace. The real Production companion endpoint is not configured yet, so live Production requests report unavailable/not configured rather than falling back to DEMO.
 
-TEST and PRODUCTION data will be kept separate.
-
-This is **planned functionality**, not current live connectivity.
+When you change environments, environment-scoped in-memory data is cleared and persistent observers rebind to the selected namespace so DEMO data is not shown as TEST or Production data.
 
 ---
 
@@ -519,7 +513,9 @@ After installing a development APK:
 Remember:
 
 ```text
-CURRENT BUILD = DEVELOPMENT / MOCK DATA
+DEFAULT MODE = DEMO / MOCK DATA
+PRIVATE TEST = NOT CONNECTED
+PRODUCTION = NOT CONNECTED
 ```
 
 ---
@@ -575,7 +571,7 @@ HELION Commander is already a substantial Android companion prototype with:
 - UniNet
 - communications
 
-It currently runs on simulated data.
+It defaults to DEMO simulated data. PRIVATE TEST and PRODUCTION selection/isolation are implemented, but verified real server connections are not configured yet.
 
 The governing rule is:
 
