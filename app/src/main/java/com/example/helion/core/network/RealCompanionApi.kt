@@ -20,7 +20,7 @@ import com.example.helion.core.model.TacticalMission
 import com.example.helion.core.model.UniverseMessage
 
 class ServerNotConfiguredException(message: String) : Exception(message)
-class ServerUnavailableException(message: String) : Exception(message)
+class ServerUnavailableException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 /**
  * RealCompanionApi represents the communication bridge to an authoritative HELION universe server.
