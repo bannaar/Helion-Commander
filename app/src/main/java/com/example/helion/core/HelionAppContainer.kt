@@ -33,7 +33,8 @@ class HelionAppContainer(val context: Context) {
         productionEndpoint = configuredEndpoint(
             BuildConfig.HELION_PRODUCTION_HOST,
             BuildConfig.HELION_PRODUCTION_PORT
-        )
+        ),
+        credentialProvider = { env -> credentialStore.getCompanionToken(env) }
     )
 
     var activeEnvironment: ServerEnvironment = environmentPreferences.getSelectedEnvironment()
