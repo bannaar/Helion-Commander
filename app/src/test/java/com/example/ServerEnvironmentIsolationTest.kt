@@ -179,6 +179,12 @@ class ServerEnvironmentIsolationTest {
 
         credentialStore.setAuthToken(ServerEnvironment.PRIVATE_TEST, testToken)
 
+        val rawPrefs = context.getSharedPreferences("helion_auth_credentials", Context.MODE_PRIVATE)
+        val encryptedTest = rawPrefs.getString("auth_token_private_test", null)
+        assertNotNull("Stored TEST credential must exist", encryptedTest)
+        assertNotEquals("Bearer token must not be stored in plaintext", testToken, encryptedTest)
+        assertTrue("Stored credential must use encrypted v1 envelope", encryptedTest?.startsWith("v1:") == true)
+
         // Verify isolation: PRODUCTION must NOT see TEST token
         assertNull("PRODUCTION must not see TEST token", credentialStore.getAuthToken(ServerEnvironment.PRODUCTION))
         assertEquals(testToken, credentialStore.getAuthToken(ServerEnvironment.PRIVATE_TEST))
@@ -195,6 +201,21 @@ class ServerEnvironmentIsolationTest {
         credentialStore.clearAuthToken(ServerEnvironment.PRIVATE_TEST)
         assertNull(credentialStore.getAuthToken(ServerEnvironment.PRIVATE_TEST))
         assertEquals(prodToken, credentialStore.getAuthToken(ServerEnvironment.PRODUCTION))
+    }
+
+    @Test
+    fun testLegacyPlaintextCredentialMigratesToEncryptedStorageOnRead() {
+        val legacyToken = "hc1.0123456789abcdef." + "a".repeat(64)
+        val rawPrefs = context.getSharedPreferences("helion_auth_credentials", Context.MODE_PRIVATE)
+        rawPrefs.edit().putString("auth_token_private_test", legacyToken).commit()
+
+        assertEquals(legacyToken, credentialStore.getCompanionToken(ServerEnvironment.PRIVATE_TEST))
+
+        val migrated = rawPrefs.getString("auth_token_private_test", null)
+        assertNotNull(migrated)
+        assertNotEquals("Legacy plaintext must be replaced after first read", legacyToken, migrated)
+        assertTrue(migrated?.startsWith("v1:") == true)
+        assertEquals(legacyToken, credentialStore.getCompanionToken(ServerEnvironment.PRIVATE_TEST))
     }
 
     @Test
