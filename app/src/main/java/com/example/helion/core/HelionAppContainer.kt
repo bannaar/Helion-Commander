@@ -23,7 +23,7 @@ class HelionAppContainer(context: Context) {
     val commanderRepository = CommanderRepository(api, database.commanderDao())
     val fleetRepository = FleetRepository(api, database.loadoutPlanDao())
     val universeRepository = UniverseRepository(api, database.routeBookmarkDao())
-    val marketRepository = MarketRepository(api, database.marketWatchlistDao())
+    val marketRepository = MarketRepository(api, database.marketWatchlistDao(), database.marketPriceAlertDao())
     val galNetRepository = GalNetRepository(api, database.galNetDao())
     val guildRepository = GuildRepository(api)
     val commsRepository = CommsRepository(api)

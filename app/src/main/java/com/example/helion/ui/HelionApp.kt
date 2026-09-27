@@ -77,7 +77,7 @@ import com.example.ui.theme.HelionVoidBlack
 
 enum class HelionDestination(val route: String, val title: String, val icon: ImageVector) {
     HOME("home", "Home", Icons.Default.Home),
-    TACTICAL_MISSIONS("missions", "Missions", Icons.Default.GpsFixed),
+    TACTICAL_MISSIONS("tactical_missions", "Missions", Icons.Default.GpsFixed),
     FLEET("fleet", "Fleet", Icons.Default.Rocket),
     STAR_SYSTEMS("star_systems", "Star Systems", Icons.Default.Explore),
     MARKETS("markets", "Markets", Icons.Default.ShoppingCart),
@@ -158,6 +158,14 @@ fun HelionApp(
                         if (s != null) fleetViewModel.selectShip(s)
                     }
                     navigateTo(HelionDestination.FLEET)
+                }
+                HelionDestination.MARKETS.route, "markets" -> {
+                    if (initialEntityId != null) {
+                        val c = marketViewModel.uiState.value.localCommodities.find { it.commodityId == initialEntityId }
+                            ?: marketViewModel.uiState.value.regionalCommodities.find { it.commodityId == initialEntityId }
+                        if (c != null) marketViewModel.selectCommodity(c)
+                    }
+                    navigateTo(HelionDestination.MARKETS)
                 }
             }
             onDestinationHandled()

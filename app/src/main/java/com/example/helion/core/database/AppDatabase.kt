@@ -12,9 +12,10 @@ import androidx.room.RoomDatabase
         RouteBookmarkEntity::class,
         MarketWatchlistEntity::class,
         CachedGalNetArticleEntity::class,
-        TacticalMissionEntity::class
+        TacticalMissionEntity::class,
+        MarketPriceAlertEntity::class
     ],
-    version = 2,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -22,6 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun loadoutPlanDao(): LoadoutPlanDao
     abstract fun routeBookmarkDao(): RouteBookmarkDao
     abstract fun marketWatchlistDao(): MarketWatchlistDao
+    abstract fun marketPriceAlertDao(): MarketPriceAlertDao
     abstract fun galNetDao(): GalNetDao
     abstract fun tacticalMissionDao(): TacticalMissionDao
 

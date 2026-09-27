@@ -27,8 +27,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.AssignmentTurnedIn
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.DirectionsRun
@@ -44,6 +46,7 @@ import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Rocket
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Stop
@@ -146,7 +149,7 @@ fun TacticalMissionsScreen(
             1 -> state.missions.filter { it.status == MissionStatus.ACTIVE }
             2 -> state.missions.filter { it.status == MissionStatus.AVAILABLE }
             3 -> state.missions.filter { it.status == MissionStatus.CLAIMED }
-            else -> state.missions
+            else -> emptyList()
         }
     }
 
@@ -376,13 +379,75 @@ fun TacticalMissionsScreen(
             }
         }
 
-        // 3. TACTICAL TABS (Active, Fleet Tasks, Contracts, Archive)
+        // 2B. QUICK DASHBOARD SHORTCUT (TAB 0)
+        if (state.selectedTab == 0) {
+            item {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = HelionSurfaceVariant,
+                    border = BorderStroke(1.dp, HelionCyan.copy(alpha = 0.5f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { viewModel.selectTab(4) }
+                        .testTag("weekly_summary_shortcut_card")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(HelionCyan.copy(alpha = 0.15f), CircleShape)
+                                    .border(1.dp, HelionCyan, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.BarChart,
+                                    contentDescription = null,
+                                    tint = HelionCyan,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "TACTICAL MISSIONS SUMMARY DASHBOARD",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = HelionCyan,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.5.sp
+                                )
+                                Text(
+                                    text = "${state.dashboardMetrics.totalCompletedMissions} total ops completed • ${String.format("%.1f", state.dashboardMetrics.weeklyAverageCompleted)} ops/wk avg",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = HelionTextSecondary,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                        Text(
+                            text = "VIEW BAR CHART →",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = HelionAmber,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp
+                        )
+                    }
+                }
+            }
+        }
+
+        // 3. TACTICAL TABS (Active, Fleet Tasks, Contracts, Archive, Dashboard)
         item {
             val tabs = listOf(
                 "Active ($activeCount)",
                 "Fleet Tasks (${state.missions.count { it.status == MissionStatus.ACTIVE }})",
                 "Contracts (${state.missions.count { it.status == MissionStatus.AVAILABLE }})",
-                "Archive (${state.missions.count { it.status == MissionStatus.CLAIMED }})"
+                "Archive (${state.missions.count { it.status == MissionStatus.CLAIMED }})",
+                "Dashboard"
             )
 
             TabRow(
@@ -410,48 +475,137 @@ fun TacticalMissionsScreen(
             }
         }
 
-        // 4. CATEGORY & THEMATIC FILTER CHIPS
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    item {
-                        FilterChip(
-                            selected = state.selectedCategoryFilter == null,
-                            onClick = { viewModel.setCategoryFilter(null) },
-                            label = { Text("All Operations", fontSize = 11.sp) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = HelionCyan,
-                                selectedLabelColor = HelionDeepGraphite,
-                                containerColor = HelionSurface,
-                                labelColor = HelionTextSecondary
+        // 4. CATEGORY & THEMATIC FILTER CHIPS (Only on mission list tabs)
+        if (state.selectedTab != 4) {
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        item {
+                            FilterChip(
+                                selected = state.selectedCategoryFilter == null,
+                                onClick = { viewModel.setCategoryFilter(null) },
+                                label = { Text("All Operations", fontSize = 11.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = HelionCyan,
+                                    selectedLabelColor = HelionDeepGraphite,
+                                    containerColor = HelionSurface,
+                                    labelColor = HelionTextSecondary
+                                )
                             )
-                        )
-                    }
+                        }
 
-                    items(MissionCategory.entries.toTypedArray()) { cat ->
-                        FilterChip(
-                            selected = state.selectedCategoryFilter == cat,
-                            onClick = {
-                                viewModel.setCategoryFilter(if (state.selectedCategoryFilter == cat) null else cat)
-                            },
-                            label = { Text(cat.displayName, fontSize = 11.sp) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(cat.primaryColorHex),
-                                selectedLabelColor = HelionVoidBlack,
-                                containerColor = HelionSurface,
-                                labelColor = HelionTextSecondary
+                        items(MissionCategory.entries.toTypedArray()) { cat ->
+                            FilterChip(
+                                selected = state.selectedCategoryFilter == cat,
+                                onClick = {
+                                    viewModel.setCategoryFilter(if (state.selectedCategoryFilter == cat) null else cat)
+                                },
+                                label = { Text(cat.displayName, fontSize = 11.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(cat.primaryColorHex),
+                                    selectedLabelColor = HelionVoidBlack,
+                                    containerColor = HelionSurface,
+                                    labelColor = HelionTextSecondary
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
         }
 
         // 5. MISSIONS CONTENT BY TAB
-        if (state.selectedTab == 1) {
+        if (state.selectedTab == 4) {
+            // SUMMARY DASHBOARD VIEW WITH WEEKLY MISSIONS BAR CHART
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    DashboardKpiCard(
+                        title = "TOTAL COMPLETED",
+                        value = "${state.dashboardMetrics.totalCompletedMissions}",
+                        unit = "Missions",
+                        accentColor = HelionCyan,
+                        icon = Icons.Default.AssignmentTurnedIn,
+                        trendLabel = "+18% vs prev",
+                        modifier = Modifier.weight(1f).testTag("kpi_total_completed")
+                    )
+                    DashboardKpiCard(
+                        title = "WEEKLY VELOCITY",
+                        value = String.format("%.1f", state.dashboardMetrics.weeklyAverageCompleted),
+                        unit = "Ops / Week",
+                        accentColor = HelionAmber,
+                        icon = Icons.Default.Speed,
+                        trendLabel = "Quota: ${state.dashboardMetrics.quotaTargetPerWeek}/wk",
+                        modifier = Modifier.weight(1f).testTag("kpi_weekly_velocity")
+                    )
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    DashboardKpiCard(
+                        title = "TOTAL BOUNTIES",
+                        value = "${state.dashboardMetrics.totalCreditsEarned / 1000}k",
+                        unit = "Credits (CR)",
+                        accentColor = HelionHighSecGreen,
+                        icon = Icons.Default.MonetizationOn,
+                        trendLabel = "Authoritative",
+                        modifier = Modifier.weight(1f).testTag("kpi_total_bounties")
+                    )
+                    DashboardKpiCard(
+                        title = "SUCCESS RATE",
+                        value = "${state.dashboardMetrics.averageSuccessRatePercent}%",
+                        unit = "Objective Met",
+                        accentColor = HelionShieldBlue,
+                        icon = Icons.Default.CheckCircle,
+                        trendLabel = "High-Sec Cert",
+                        modifier = Modifier.weight(1f).testTag("kpi_success_rate")
+                    )
+                }
+            }
+
+            // Interactive Weekly Missions Bar Chart Card
+            item {
+                WeeklyMissionsBarChartCard(
+                    records = state.dashboardMetrics.weeklyRecords,
+                    quotaTarget = state.dashboardMetrics.quotaTargetPerWeek,
+                    selectedIndex = state.selectedWeekIndex,
+                    chartMode = state.chartMode,
+                    onSelectIndex = { viewModel.selectWeek(it) },
+                    onSetMode = { viewModel.setChartMode(it) }
+                )
+            }
+
+            // Selected Week Detail Card
+            val selectedRecord = state.dashboardMetrics.weeklyRecords.getOrNull(state.selectedWeekIndex)
+                ?: state.dashboardMetrics.weeklyRecords.lastOrNull()
+            if (selectedRecord != null) {
+                item {
+                    SelectedWeekDetailCard(
+                        record = selectedRecord,
+                        numberFormat = numberFormat
+                    )
+                }
+            }
+
+            // Category Performance Distribution
+            item {
+                CategoryPerformanceBreakdownCard(records = state.dashboardMetrics.weeklyRecords)
+            }
+
+            // Top Performing Fleet Sortie Craft
+            item {
+                FleetSortiesRosterCard(records = state.dashboardMetrics.weeklyRecords)
+            }
+        } else if (state.selectedTab == 1) {
             // FLEET TASK ASSIGNMENTS VIEW
             items(filteredMissions) { mission ->
                 FleetTaskAssignmentCard(
@@ -492,7 +646,7 @@ fun TacticalMissionsScreen(
         }
 
         // Empty State
-        if (filteredMissions.isEmpty()) {
+        if (state.selectedTab != 4 && filteredMissions.isEmpty()) {
             item {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
@@ -507,7 +661,7 @@ fun TacticalMissionsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.Default.Assignment, contentDescription = null, tint = HelionTextMuted, modifier = Modifier.size(36.dp))
+                        Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, tint = HelionTextMuted, modifier = Modifier.size(36.dp))
                         Text("No Missions in this Category", style = MaterialTheme.typography.titleMedium, color = HelionTextPrimary)
                         Text("Check available contracts or reset active filters.", style = MaterialTheme.typography.bodySmall, color = HelionTextSecondary)
                         OutlinedButton(

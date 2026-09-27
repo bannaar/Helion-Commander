@@ -43,6 +43,7 @@ interface CompanionApi {
     suspend fun getMarketItems(stationId: String? = null): Result<List<MarketItem>>
     suspend fun getAllRegionalMarkets(): Result<List<MarketItem>>
     suspend fun executeMarketTransaction(request: MarketTransactionRequest): Result<MarketTransactionResult>
+    suspend fun updateCommodityPrice(commodityId: String, newBuyPrice: Long, newSellPrice: Long, stationId: String? = null): Result<MarketItem>
 
     // GalNet
     suspend fun getGalNetArticles(): Result<List<GalNetArticle>>

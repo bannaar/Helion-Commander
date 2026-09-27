@@ -1,5 +1,7 @@
 package com.example.helion.core.repository
 
+import com.example.helion.core.database.MarketPriceAlertDao
+import com.example.helion.core.database.MarketPriceAlertEntity
 import com.example.helion.core.database.MarketWatchlistDao
 import com.example.helion.core.database.MarketWatchlistEntity
 import com.example.helion.core.model.CommodityPriceComparison
@@ -14,7 +16,8 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class MarketRepository(
     private val api: CompanionApi,
-    private val watchlistDao: MarketWatchlistDao
+    private val watchlistDao: MarketWatchlistDao,
+    private val priceAlertDao: MarketPriceAlertDao
 ) {
     private val _localMarket = MutableStateFlow<List<MarketItem>>(emptyList())
     val localMarket: StateFlow<List<MarketItem>> = _localMarket.asStateFlow()
@@ -31,6 +34,20 @@ class MarketRepository(
     suspend fun refreshRegionalMarkets(): Result<List<MarketItem>> {
         val res = api.getAllRegionalMarkets()
         res.onSuccess { _regionalMarket.value = it }
+        return res
+    }
+
+    suspend fun updateCommodityPrice(
+        commodityId: String,
+        newBuyPrice: Long,
+        newSellPrice: Long,
+        stationId: String? = null
+    ): Result<MarketItem> {
+        val res = api.updateCommodityPrice(commodityId, newBuyPrice, newSellPrice, stationId)
+        res.onSuccess {
+            refreshLocalMarket()
+            refreshRegionalMarkets()
+        }
         return res
     }
 
@@ -64,6 +81,7 @@ class MarketRepository(
         }.sortedByDescending { it.estimatedGrossMarginPerTon }
     }
 
+    // Watchlist
     fun getWatchlist(): Flow<List<MarketWatchlistEntity>> = watchlistDao.getWatchlist()
 
     suspend fun addToWatchlist(item: MarketItem) {
@@ -81,5 +99,29 @@ class MarketRepository(
 
     suspend fun removeFromWatchlist(commodityId: String) {
         watchlistDao.removeFromWatchlist(commodityId)
+    }
+
+    // Price Threshold Alerts (Room persistence)
+    fun getAllPriceAlerts(): Flow<List<MarketPriceAlertEntity>> = priceAlertDao.getAllPriceAlerts()
+
+    fun getActivePriceAlerts(): Flow<List<MarketPriceAlertEntity>> = priceAlertDao.getActivePriceAlerts()
+
+    fun getAlertsForCommodity(commodityId: String): Flow<List<MarketPriceAlertEntity>> =
+        priceAlertDao.getAlertsForCommodity(commodityId)
+
+    suspend fun insertOrUpdatePriceAlert(alert: MarketPriceAlertEntity) {
+        priceAlertDao.insertOrUpdateAlert(alert)
+    }
+
+    suspend fun setAlertActive(alertId: String, isActive: Boolean) {
+        priceAlertDao.setAlertActive(alertId, isActive)
+    }
+
+    suspend fun markAlertTriggered(alertId: String, isTriggered: Boolean, triggeredAt: Long, price: Long) {
+        priceAlertDao.markAlertTriggered(alertId, isTriggered, triggeredAt, price)
+    }
+
+    suspend fun deletePriceAlert(alertId: String) {
+        priceAlertDao.deleteAlert(alertId)
     }
 }

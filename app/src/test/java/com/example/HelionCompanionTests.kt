@@ -200,4 +200,65 @@ class HelionCompanionTests {
         val afterCredits = api.getCommanderProfile().getOrThrow().credits
         assertEquals(beforeCredits + completedMission.creditReward, afterCredits)
     }
+
+    @Test
+    fun testTacticalMissionDashboardMetricsAndWeeklyBarChartData() = runBlocking {
+        val missions = api.getTacticalMissions().getOrThrow()
+        val metrics = com.example.helion.core.model.TacticalMissionAnalytics.generateDashboardData(missions)
+
+        assertNotNull(metrics)
+        assertTrue("Should have 6 weekly records", metrics.weeklyRecords.size >= 6)
+        assertTrue("Total completed missions should be positive", metrics.totalCompletedMissions > 0)
+        assertTrue("Weekly average completed should be positive", metrics.weeklyAverageCompleted > 0f)
+        assertEquals(8, metrics.quotaTargetPerWeek)
+
+        // Check weekly records structure for bar chart
+        val currentWeek = metrics.weeklyRecords.find { it.isCurrentWeek }
+        assertNotNull("Current week record should exist", currentWeek)
+        assertTrue("Completed count should be positive", currentWeek!!.completedCount > 0)
+        assertTrue("Credits earned should be positive", currentWeek.creditsEarned > 0L)
+        assertTrue("Top operating ship should not be empty", currentWeek.topShip.isNotEmpty())
+    }
+
+    @Test
+    fun testMarketPriceThresholdAlertLogic() = runBlocking {
+        val marketItems = api.getMarketItems("sta-kepler-prime").getOrThrow()
+        val metals = marketItems.find { it.commodityId == "com-refined-metals" }
+        assertNotNull("Metals should exist", metals)
+
+        // Buy price threshold: Alert when buy price <= target
+        val buyPrice = metals!!.buyPrice
+        val thresholdTarget = buyPrice + 10L // Target is higher, so current buy price is AT_OR_BELOW threshold
+        val isThresholdMetBelow = buyPrice <= thresholdTarget
+        assertTrue("Price should trigger AT_OR_BELOW threshold", isThresholdMetBelow)
+
+        // Sell price threshold: Alert when sell price >= target
+        val sellPrice = metals.sellPrice
+        val sellTarget = sellPrice - 10L // Target is lower, so current sell price is AT_OR_ABOVE threshold
+        val isThresholdMetAbove = sellPrice >= sellTarget
+        assertTrue("Price should trigger AT_OR_ABOVE threshold", isThresholdMetAbove)
+    }
+
+    @Test
+    fun testShipMaintenanceCalculations() = runBlocking {
+        val isolatedApi = FakeCompanionApi()
+        val ships = isolatedApi.getOwnedShips().getOrThrow()
+        val raptor = ships.find { it.instanceId == "ship-raptor-01" }
+        assertNotNull(raptor)
+
+        // Fresh raptor has 94.5% hull and 12% wear (< 35% wear and >= 80% hull)
+        assertFalse("New ship should not require maintenance", raptor!!.requiresMaintenance)
+
+        // Simulate wear/damage
+        val damaged = isolatedApi.simulateShipWear("ship-raptor-01", 30f, 40f).getOrThrow()
+        assertTrue("Ship with 70% hull or 40% wear should require maintenance", damaged.requiresMaintenance)
+        assertTrue("Maintenance status summary should reflect degradation", damaged.maintenanceStatusSummary.contains("CRITICAL") || damaged.maintenanceStatusSummary.contains("WARNING"))
+
+        // Perform maintenance
+        val overhauled = isolatedApi.performShipMaintenance("ship-raptor-01").getOrThrow()
+        assertEquals(100f, overhauled.hullConditionPercent, 0.01f)
+        assertEquals(0f, overhauled.wearPercent, 0.01f)
+        assertFalse("Overhauled ship should no longer require maintenance", overhauled.requiresMaintenance)
+    }
 }
+

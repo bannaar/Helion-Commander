@@ -159,6 +159,7 @@ class TacticalMissionsRepository(
 
             return TacticalMissionEntity(
                 missionId = id,
+                missionName = title,
                 title = title,
                 briefing = briefing,
                 sponsorFaction = sponsorFaction,
@@ -175,6 +176,7 @@ class TacticalMissionsRepository(
                 fleetProgressPercent = fleetProgressPercent,
                 timeRemainingMinutes = timeRemainingMinutes,
                 status = status.name,
+                completionTimestamp = if (status == MissionStatus.COMPLETED || status == MissionStatus.CLAIMED) System.currentTimeMillis() else 0L,
                 isPriorityTarget = isPriorityTarget,
                 lastUpdatedEpoch = System.currentTimeMillis()
             )

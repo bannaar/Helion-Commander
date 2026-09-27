@@ -1423,6 +1423,35 @@ class FakeCompanionApi : CompanionApi {
         }
     }
 
+    override suspend fun updateCommodityPrice(
+        commodityId: String,
+        newBuyPrice: Long,
+        newSellPrice: Long,
+        stationId: String?
+    ): Result<MarketItem> = mutex.withLock {
+        delay(60)
+        val targetStation = stationId ?: activeStationId
+        val index = marketDatabase.indexOfFirst {
+            it.commodityId == commodityId && (stationId == null || it.stationId == targetStation)
+        }
+        if (index == -1) return Result.failure(Exception("Commodity not found in market registry."))
+
+        val current = marketDatabase[index]
+        val oldPrice = current.buyPrice
+        val trendChange = if (oldPrice > 0) {
+            (((newBuyPrice - oldPrice).toDouble() / oldPrice.toDouble()) * 100).toInt()
+        } else 0
+
+        val updated = current.copy(
+            buyPrice = newBuyPrice,
+            sellPrice = newSellPrice,
+            priceChange24h = trendChange,
+            lastUpdatedEpoch = System.currentTimeMillis()
+        )
+        marketDatabase[index] = updated
+        Result.success(updated)
+    }
+
     override suspend fun getGalNetArticles(): Result<List<GalNetArticle>> = mutex.withLock {
         delay(80)
         Result.success(galNetArticles.toList())

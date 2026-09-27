@@ -68,22 +68,45 @@ data class CachedGalNetArticleEntity(
 @Entity(tableName = "tactical_missions")
 data class TacticalMissionEntity(
     @PrimaryKey val missionId: String,
-    val title: String,
-    val briefing: String,
-    val sponsorFaction: String,
-    val category: String,
-    val threatLevel: String,
-    val creditReward: Long,
-    val standingReward: Int,
-    val bonusRewardItem: String?,
-    val primaryLocationJson: String,
-    val objectivesJson: String,
-    val assignedShipName: String,
-    val assignedFleetStatus: String,
-    val assignedFleetTaskLabel: String,
-    val fleetProgressPercent: Float,
-    val timeRemainingMinutes: Int,
-    val status: String,
-    val isPriorityTarget: Boolean,
-    val lastUpdatedEpoch: Long
+    val missionName: String = "",
+    val status: String = "ACTIVE",
+    val completionTimestamp: Long = 0L,
+    val title: String = missionName,
+    val briefing: String = "",
+    val sponsorFaction: String = "",
+    val category: String = "COMBAT_INTERDICTION",
+    val threatLevel: String = "MODERATE",
+    val creditReward: Long = 0L,
+    val standingReward: Int = 0,
+    val bonusRewardItem: String? = null,
+    val primaryLocationJson: String = "{}",
+    val objectivesJson: String = "[]",
+    val assignedShipName: String = "",
+    val assignedFleetStatus: String = "READY_IN_HANGAR",
+    val assignedFleetTaskLabel: String = "Standby",
+    val fleetProgressPercent: Float = 0f,
+    val timeRemainingMinutes: Int = 60,
+    val isPriorityTarget: Boolean = false,
+    val lastUpdatedEpoch: Long = System.currentTimeMillis()
+) {
+    val id: String get() = missionId
+    val name: String get() = missionName.ifEmpty { title }
+}
+
+@Entity(tableName = "market_price_alerts")
+data class MarketPriceAlertEntity(
+    @PrimaryKey val alertId: String,
+    val commodityId: String,
+    val displayName: String,
+    val categoryName: String,
+    val targetPrice: Long,
+    val isBuyPrice: Boolean,
+    val conditionType: String, // "AT_OR_BELOW" or "AT_OR_ABOVE"
+    val stationId: String? = null,
+    val stationName: String? = null,
+    val isActive: Boolean = true,
+    val isTriggered: Boolean = false,
+    val lastTriggeredAtEpoch: Long? = null,
+    val lastCheckedPrice: Long? = null,
+    val createdAtEpoch: Long = System.currentTimeMillis()
 )

@@ -8,6 +8,9 @@ import com.example.helion.core.model.MissionCategory
 import com.example.helion.core.model.MissionStatus
 import com.example.helion.core.model.TacticalMission
 import com.example.helion.core.model.ThreatLevel
+import com.example.helion.core.model.MissionChartMode
+import com.example.helion.core.model.MissionDashboardMetrics
+import com.example.helion.core.model.TacticalMissionAnalytics
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,13 +22,16 @@ import kotlinx.coroutines.launch
 data class TacticalMissionsUiState(
     val isLoading: Boolean = false,
     val missions: List<TacticalMission> = emptyList(),
-    val selectedTab: Int = 0, // 0: Active Operations, 1: Fleet Tasks, 2: Available Contracts, 3: Mission Archive
+    val selectedTab: Int = 0, // 0: Active Operations, 1: Fleet Tasks, 2: Available Contracts, 3: Mission Archive, 4: Summary Dashboard
     val selectedCategoryFilter: MissionCategory? = null,
     val selectedThreatFilter: ThreatLevel? = null,
     val searchQuery: String = "",
     val selectedMission: TacticalMission? = null,
     val actionBannerMessage: String? = null,
-    val isSimulatingFleetFeed: Boolean = false
+    val isSimulatingFleetFeed: Boolean = false,
+    val selectedWeekIndex: Int = 5,
+    val chartMode: MissionChartMode = MissionChartMode.TOTAL,
+    val dashboardMetrics: MissionDashboardMetrics = TacticalMissionAnalytics.generateDashboardData(emptyList())
 )
 
 class TacticalMissionsViewModel(
@@ -42,11 +48,15 @@ class TacticalMissionsViewModel(
         // Collect repository state flow and monitor for 100% progress
         viewModelScope.launch {
             container.tacticalMissionsRepository.missionsState.collect { list ->
-                _uiState.value = _uiState.value.copy(missions = list)
+                val metrics = TacticalMissionAnalytics.generateDashboardData(list)
+                _uiState.value = _uiState.value.copy(
+                    missions = list,
+                    dashboardMetrics = metrics
+                )
 
                 // Trigger alerts when progress reaches 100%
                 list.forEach { mission ->
-                    if (mission.status == MissionStatus.COMPLETED || mission.progressPercent >= 100f) {
+                    if (mission.status == MissionStatus.COMPLETED || mission.overallProgressPercent >= 1.0f) {
                         container.notificationManager.notifyMissionProgressComplete(mission, isFleetTask = false)
                     }
                     if (mission.fleetProgressPercent >= 100f) {
@@ -89,11 +99,19 @@ class TacticalMissionsViewModel(
         _uiState.value = _uiState.value.copy(actionBannerMessage = null)
     }
 
+    fun selectWeek(index: Int) {
+        _uiState.value = _uiState.value.copy(selectedWeekIndex = index)
+    }
+
+    fun setChartMode(mode: MissionChartMode) {
+        _uiState.value = _uiState.value.copy(chartMode = mode)
+    }
+
     fun advanceObjective(missionId: String, objectiveId: String, increment: Int = 1) {
         viewModelScope.launch {
             val result = container.tacticalMissionsRepository.advanceObjective(missionId, objectiveId, increment)
             result.onSuccess { updated ->
-                if (updated.status == MissionStatus.COMPLETED || updated.progressPercent >= 100f) {
+                if (updated.status == MissionStatus.COMPLETED || updated.overallProgressPercent >= 1.0f) {
                     container.notificationManager.notifyMissionProgressComplete(updated, isFleetTask = false, force = true)
                 }
                 val banner = if (updated.status == MissionStatus.COMPLETED) {

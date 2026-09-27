@@ -12,7 +12,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.MainActivity
-import com.example.helion.R
+import com.example.R
+import com.example.helion.core.model.MarketItem
 import com.example.helion.core.model.OwnedShipInstance
 import com.example.helion.core.model.TacticalMission
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,7 @@ import java.util.UUID
 enum class NotificationType {
     MISSION_COMPLETE,
     FLEET_MAINTENANCE,
+    MARKET_PRICE_TARGET,
     SYSTEM_ALERT
 }
 
@@ -45,11 +47,15 @@ class HelionNotificationManager(private val context: Context) {
         const val CHANNEL_ID_FLEET = "helion_fleet_maintenance"
         const val CHANNEL_NAME_FLEET = "Fleet Maintenance & Engineering"
 
+        const val CHANNEL_ID_MARKET = "helion_market_price_alerts"
+        const val CHANNEL_NAME_MARKET = "Market Commodity Price Alerts"
+
         const val EXTRA_DESTINATION = "extra_helion_destination"
         const val EXTRA_ENTITY_ID = "extra_helion_entity_id"
 
         private const val BASE_MISSION_NOTIF_ID = 2000
         private const val BASE_FLEET_NOTIF_ID = 3000
+        private const val BASE_MARKET_NOTIF_ID = 4000
     }
 
     private val notificationManagerCompat = NotificationManagerCompat.from(context)
@@ -64,6 +70,7 @@ class HelionNotificationManager(private val context: Context) {
     // Settings
     var missionAlertsEnabled: Boolean = true
     var fleetMaintenanceAlertsEnabled: Boolean = true
+    var marketAlertsEnabled: Boolean = true
     var vibrationEnabled: Boolean = true
 
     init {
@@ -97,8 +104,20 @@ class HelionNotificationManager(private val context: Context) {
                 setShowBadge(true)
             }
 
+            // Channel 3: Market Commodity Price Alerts
+            val marketChannel = NotificationChannel(
+                CHANNEL_ID_MARKET,
+                CHANNEL_NAME_MARKET,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Urgent alerts when tracked commodities reach your specified buy or sell price thresholds"
+                enableVibration(true)
+                setShowBadge(true)
+            }
+
             systemNotificationManager.createNotificationChannel(missionsChannel)
             systemNotificationManager.createNotificationChannel(fleetChannel)
+            systemNotificationManager.createNotificationChannel(marketChannel)
         }
     }
 
@@ -136,7 +155,7 @@ class HelionNotificationManager(private val context: Context) {
         }
 
         val shortSummary = if (isFleetTask) {
-            "Task [${mission.assignedFleetStatus.displayName}] at ${mission.primaryLocation.systemName} complete. Ready for new orders."
+            "Task [${mission.assignedFleetStatus.label}] at ${mission.primaryLocation.systemName} complete. Ready for new orders."
         } else {
             "All objectives fulfilled at ${mission.primaryLocation.systemName}. Bounty of ${mission.creditReward} CR ready to claim."
         }
@@ -145,8 +164,8 @@ class HelionNotificationManager(private val context: Context) {
             append("• Sector: ${mission.primaryLocation.systemName} (${mission.primaryLocation.beaconCode})\n")
             append("• Target Anchor: ${mission.primaryLocation.celestialBodyName}\n")
             append("• Faction Sponsor: ${mission.sponsorFaction}\n")
-            append("• Bounty Value: ${mission.creditReward} Credits + ${mission.reputationReward} REP\n")
-            append("• Assigned Craft: ${mission.assignedShipName} (Task: ${mission.assignedFleetStatus.displayName})\n")
+            append("• Bounty Value: ${mission.creditReward} Credits + ${mission.standingReward} REP\n")
+            append("• Assigned Craft: ${mission.assignedShipName} (Task: ${mission.assignedFleetStatus.label})\n")
             append("• Action Required: Return to Operations Command to finalize debrief and claim rewards.")
         }
 
@@ -280,6 +299,92 @@ class HelionNotificationManager(private val context: Context) {
 
     fun resetDeduplicationForShip(instanceId: String) {
         notifiedEvents.remove("ship_${instanceId}_maintenance")
+    }
+
+    /**
+     * Dispatches a local device notification when a commodity price reaches or breaches a user-defined threshold.
+     */
+    fun notifyMarketPriceThreshold(
+        commodity: MarketItem,
+        targetPrice: Long,
+        isBuyPrice: Boolean,
+        conditionType: String,
+        alertId: String = commodity.commodityId,
+        force: Boolean = false
+    ) {
+        if (!marketAlertsEnabled) return
+
+        val currentPrice = if (isBuyPrice) commodity.buyPrice else commodity.sellPrice
+        val dedupeKey = "market_alert_${alertId}_${currentPrice}"
+        if (!force && notifiedEvents.contains(dedupeKey)) {
+            return
+        }
+        notifiedEvents.add(dedupeKey)
+
+        val priceTypeLabel = if (isBuyPrice) "BUY PRICE" else "SELL PRICE"
+        val conditionLabel = if (conditionType == "AT_OR_BELOW" || conditionType == "<=") "≤" else "≥"
+        val title = "📈 MARKET ALERT: ${commodity.displayName} [$priceTypeLabel]"
+        val shortSummary = "${commodity.displayName} hit $currentPrice CR ($conditionLabel $targetPrice CR target) at ${commodity.stationName}!"
+
+        val detailedText = buildString {
+            append("• Target Threshold: $priceTypeLabel $conditionLabel $targetPrice CR\n")
+            append("• Current Market Price: $currentPrice CR / ${commodity.unit}\n")
+            append("• Station: ${commodity.stationName} (${commodity.systemName} System)\n")
+            append("• Available Stock: ${commodity.stockUnits} ${commodity.unit}\n")
+            append("• 24h Trend: ${if (commodity.priceChange24h >= 0) "+${commodity.priceChange24h}%" else "${commodity.priceChange24h}%"}\n")
+            append("• Action: Tap to open Market and execute trade.")
+        }
+
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(EXTRA_DESTINATION, "markets")
+            putExtra(EXTRA_ENTITY_ID, commodity.commodityId)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            (alertId.hashCode() + 400),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notificationId = BASE_MARKET_NOTIF_ID + (alertId.hashCode() % 500).let { if (it < 0) -it else it }
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID_MARKET)
+            .setSmallIcon(R.drawable.ic_notification_market)
+            .setContentTitle(title)
+            .setContentText(shortSummary)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(detailedText).setSummaryText("Price Target Hit"))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_EVENT)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setColor(0xFFFFB300.toInt()) // HelionAmber
+
+        if (vibrationEnabled) {
+            builder.setVibrate(longArrayOf(0, 150, 100, 200, 100, 300))
+        }
+
+        val event = HelionNotificationEvent(
+            title = title,
+            message = shortSummary,
+            type = NotificationType.MARKET_PRICE_TARGET,
+            targetRoute = "markets",
+            entityId = commodity.commodityId
+        )
+        recordNotificationEvent(event)
+
+        if (hasNotificationPermission()) {
+            try {
+                notificationManagerCompat.notify(notificationId, builder.build())
+            } catch (e: SecurityException) {
+                // Permission revoked at runtime
+            }
+        }
+    }
+
+    fun resetDeduplicationForAlert(alertId: String) {
+        notifiedEvents.removeAll { it.startsWith("market_alert_${alertId}_") }
     }
 
     private fun recordNotificationEvent(event: HelionNotificationEvent) {

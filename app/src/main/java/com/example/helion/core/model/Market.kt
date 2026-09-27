@@ -24,7 +24,8 @@ data class MarketItem(
     val systemName: String,
     val regionId: String,
     val lastUpdatedEpoch: Long,
-    val priceTrendDelta: Int = 0 // negative or positive delta
+    val priceTrendDelta: Int = 0, // negative or positive delta
+    val priceChange24h: Int = priceTrendDelta
 )
 
 data class CommodityPriceComparison(
