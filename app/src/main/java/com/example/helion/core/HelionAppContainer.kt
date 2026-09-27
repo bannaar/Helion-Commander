@@ -56,8 +56,8 @@ class HelionAppContainer(val context: Context) {
         }
 
         activeEnvironment = env
-        settingsRepository.setServerEnvironmentLocally(env)
         clearEnvironmentScopedInMemoryState()
+        settingsRepository.setServerEnvironmentLocally(env)
     }
 
     private fun clearEnvironmentScopedInMemoryState() {
