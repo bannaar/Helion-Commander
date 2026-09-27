@@ -654,7 +654,7 @@ fun LoadoutPlannerContent(
                 ) {
                     Column {
                         Text(text = "ESTIMATED REFIT COST", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
-                        Text(text = "${numberFormat.format(totalCostCR)} CR", style = MaterialTheme.typography.titleMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
+                        Text(text = "${numberFormat.format(totalCostCR)} GSC", style = MaterialTheme.typography.titleMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
                     }
 
                     Row {
@@ -850,7 +850,7 @@ fun SlotFittingCard(
                                     Text(text = "Size ${mod.size} • Grade ${mod.grade} • ${mod.powerDrawMw} MW • ${mod.massTons} T", style = MaterialTheme.typography.labelSmall, color = HelionTextSecondary)
                                 }
                                 Text(
-                                    text = "${mod.purchasePrice} CR",
+                                    text = "${mod.purchasePrice} GSC",
                                     style = MaterialTheme.typography.labelMedium,
                                     color = HelionAmber,
                                     fontWeight = FontWeight.Bold

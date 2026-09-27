@@ -157,14 +157,14 @@ class HelionNotificationManager(private val context: Context) {
         val shortSummary = if (isFleetTask) {
             "Task [${mission.assignedFleetStatus.label}] at ${mission.primaryLocation.systemName} complete. Ready for new orders."
         } else {
-            "All objectives fulfilled at ${mission.primaryLocation.systemName}. Bounty of ${mission.creditReward} CR ready to claim."
+            "All objectives fulfilled at ${mission.primaryLocation.systemName}. Bounty of ${mission.creditReward} GSC ready to claim."
         }
 
         val detailedDebrief = buildString {
             append("• Sector: ${mission.primaryLocation.systemName} (${mission.primaryLocation.beaconCode})\n")
             append("• Target Anchor: ${mission.primaryLocation.celestialBodyName}\n")
             append("• Faction Sponsor: ${mission.sponsorFaction}\n")
-            append("• Bounty Value: ${mission.creditReward} Credits + ${mission.standingReward} REP\n")
+            append("• Bounty Value: ${mission.creditReward} GSC + ${mission.standingReward} REP\n")
             append("• Assigned Craft: ${mission.assignedShipName} (Task: ${mission.assignedFleetStatus.label})\n")
             append("• Action Required: Return to Operations Command to finalize debrief and claim rewards.")
         }
@@ -324,11 +324,11 @@ class HelionNotificationManager(private val context: Context) {
         val priceTypeLabel = if (isBuyPrice) "BUY PRICE" else "SELL PRICE"
         val conditionLabel = if (conditionType == "AT_OR_BELOW" || conditionType == "<=") "≤" else "≥"
         val title = "📈 MARKET ALERT: ${commodity.displayName} [$priceTypeLabel]"
-        val shortSummary = "${commodity.displayName} hit $currentPrice CR ($conditionLabel $targetPrice CR target) at ${commodity.stationName}!"
+        val shortSummary = "${commodity.displayName} hit $currentPrice GSC ($conditionLabel $targetPrice GSC target) at ${commodity.stationName}!"
 
         val detailedText = buildString {
-            append("• Target Threshold: $priceTypeLabel $conditionLabel $targetPrice CR\n")
-            append("• Current Market Price: $currentPrice CR / ${commodity.unit}\n")
+            append("• Target Threshold: $priceTypeLabel $conditionLabel $targetPrice GSC\n")
+            append("• Current Market Price: $currentPrice GSC / ${commodity.unit}\n")
             append("• Station: ${commodity.stationName} (${commodity.systemName} System)\n")
             append("• Available Stock: ${commodity.stockUnits} ${commodity.unit}\n")
             append("• 24h Trend: ${if (commodity.priceChange24h >= 0) "+${commodity.priceChange24h}%" else "${commodity.priceChange24h}%"}\n")

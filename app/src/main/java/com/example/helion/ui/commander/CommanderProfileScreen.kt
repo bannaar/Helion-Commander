@@ -167,9 +167,9 @@ fun CommanderProfileScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text(text = "CREDIT BALANCE (CR)", style = MaterialTheme.typography.labelSmall, color = HelionTextSecondary)
+                        Text(text = "GSC BALANCE", style = MaterialTheme.typography.labelSmall, color = HelionTextSecondary)
                         Text(
-                            text = "${numberFormat.format(cmd.credits)} CR",
+                            text = "${numberFormat.format(cmd.credits)} GSC",
                             style = MaterialTheme.typography.headlineMedium,
                             color = HelionAmber,
                             fontWeight = FontWeight.Bold

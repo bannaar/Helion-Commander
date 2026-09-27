@@ -159,7 +159,7 @@ fun MarketCommodityCard(
                 // RIGHT SIDE: Price & Trend Indicator
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "${numberFormat.format(item.buyPrice)} CR",
+                        text = "${numberFormat.format(item.buyPrice)} GSC",
                         style = MaterialTheme.typography.headlineSmall,
                         color = HelionAmber,
                         fontWeight = FontWeight.Bold
@@ -196,7 +196,7 @@ fun MarketCommodityCard(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "Local Sell Offer: ${numberFormat.format(item.sellPrice)} CR",
+                        text = "Local Sell Offer: ${numberFormat.format(item.sellPrice)} GSC",
                         style = MaterialTheme.typography.labelSmall,
                         color = HelionTextSecondary
                     )
@@ -223,7 +223,7 @@ fun MarketCommodityCard(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = if (maxProfitMargin > 0) "+${numberFormat.format(maxProfitMargin)} CR/ton" else "Regional Parity",
+                                text = if (maxProfitMargin > 0) "+${numberFormat.format(maxProfitMargin)} GSC/ton" else "Regional Parity",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = if (maxProfitMargin > 0) HelionHighSecGreen else HelionTextSecondary,
                                 fontWeight = FontWeight.Bold
@@ -282,7 +282,7 @@ fun MarketCommodityCard(
                                 }
                             }
                             Text(
-                                text = "${numberFormat.format(item.buyPrice)} CR",
+                                text = "${numberFormat.format(item.buyPrice)} GSC",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = HelionAmber,
                                 fontWeight = FontWeight.Bold
@@ -327,13 +327,13 @@ fun MarketCommodityCard(
                                 }
                                 Column(horizontalAlignment = Alignment.End) {
                                     Text(
-                                        text = "${numberFormat.format(other.buyPrice)} CR",
+                                        text = "${numberFormat.format(other.buyPrice)} GSC",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = HelionTextPrimary,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = if (diff > 0) "+${numberFormat.format(diff)} CR Margin" else "${numberFormat.format(diff)} CR",
+                                        text = if (diff > 0) "+${numberFormat.format(diff)} GSC Margin" else "${numberFormat.format(diff)} GSC",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = if (diff > 0) HelionHighSecGreen else HelionTextMuted,
                                         fontSize = 9.sp
@@ -428,9 +428,9 @@ fun MarketTrendBadge(
             Spacer(modifier = Modifier.width(3.dp))
             Text(
                 text = when {
-                    isPositive -> "+$delta CR (+${String.format("%.1f", percentChange)}%)"
-                    isNeutral -> "0 CR (Stable)"
-                    else -> "$delta CR (${String.format("%.1f", percentChange)}%)"
+                    isPositive -> "+$delta GSC (+${String.format("%.1f", percentChange)}%)"
+                    isNeutral -> "0 GSC (Stable)"
+                    else -> "$delta GSC (${String.format("%.1f", percentChange)}%)"
                 },
                 style = MaterialTheme.typography.labelSmall,
                 color = badgeColor,

@@ -304,7 +304,7 @@ fun GuildTerritoryContent(guild: GuildInfo) {
     ) {
         item {
             Text(
-                text = "SOVEREIGN NULL-SEC SYSTEMS (${guild.territories.size})",
+                text = "ZERO SPACE SOVEREIGN SYSTEMS (${guild.territories.size})",
                 style = MaterialTheme.typography.labelSmall,
                 color = HelionTextSecondary
             )
@@ -328,13 +328,13 @@ fun GuildTerritoryContent(guild: GuildInfo) {
                             Text(text = terr.sovereigntyStatus, style = MaterialTheme.typography.labelSmall, color = HelionNullSecPurple)
                         }
                         Surface(shape = RoundedCornerShape(4.dp), color = HelionNullSecPurple.copy(alpha = 0.2f)) {
-                            Text(text = "0.0 NULL SEC", color = HelionNullSecPurple, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontWeight = FontWeight.Bold)
+                            Text(text = "0.0 ZERO SPACE", color = HelionNullSecPurple, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontWeight = FontWeight.Bold)
                         }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "Daily Citadel Tariff Revenue: ${numberFormat.format(terr.dailyRevenueCr)} CR",
+                        text = "Daily Citadel Tariff Revenue: ${numberFormat.format(terr.dailyRevenueCr)} GSC",
                         style = MaterialTheme.typography.bodySmall,
                         color = HelionAmber,
                         fontWeight = FontWeight.Medium

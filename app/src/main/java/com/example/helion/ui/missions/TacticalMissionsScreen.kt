@@ -331,7 +331,7 @@ fun TacticalMissionsScreen(
                         Box(modifier = Modifier.height(28.dp).width(1.dp).background(HelionBorder))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("POTENTIAL BOUNTY", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted, fontSize = 9.sp)
-                            Text("${numberFormat.format(totalActiveBounty)} CR", style = MaterialTheme.typography.titleMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
+                            Text("${numberFormat.format(totalActiveBounty)} GSC", style = MaterialTheme.typography.titleMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
                         }
                         Box(modifier = Modifier.height(28.dp).width(1.dp).background(HelionBorder))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -554,7 +554,7 @@ fun TacticalMissionsScreen(
                     DashboardKpiCard(
                         title = "TOTAL BOUNTIES",
                         value = "${state.dashboardMetrics.totalCreditsEarned / 1000}k",
-                        unit = "Credits (CR)",
+                        unit = "GSC",
                         accentColor = HelionHighSecGreen,
                         icon = Icons.Default.MonetizationOn,
                         trendLabel = "Authoritative",
@@ -949,7 +949,7 @@ fun TacticalMissionCard(
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "${numberFormat.format(mission.creditReward)} CR",
+                            text = "${numberFormat.format(mission.creditReward)} GSC",
                             style = MaterialTheme.typography.titleMedium,
                             color = HelionAmber,
                             fontWeight = FontWeight.Bold
