@@ -378,7 +378,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
                     surfaceHazards = "Solar Particle Radiation • Heavy Micro-crust",
                     miningYields = listOf(
                         PlanetMiningYield("Titanium Core Veins", "Heavy Metals", 92, 820, "Hazardous", ResourceAbundance.PRISTINE),
-                        PlanetMiningYield("Tritanium Ore", "Industrial Metals", 88, 740, "Moderate", ResourceAbundance.RICH)
+                        PlanetMiningYield("Nickel-Iron Ore", "Industrial Metals", 88, 740, "Moderate", ResourceAbundance.RICH)
                     ),
                     activeExtractionFacilities = 8,
                     surveyQualityPercentage = 97
@@ -509,7 +509,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
                     surfaceHazards = "Fragmented Planetary Crust • Zero Navigational Beacons",
                     miningYields = listOf(
                         PlanetMiningYield("Dark Ore Fragments", "Heavy Metals", 92, 730, "Extreme", ResourceAbundance.PRISTINE),
-                        PlanetMiningYield("Unrefined Tritanium Clustered", "Heavy Metals", 84, 580, "Hazardous", ResourceAbundance.RICH)
+                        PlanetMiningYield("Unrefined Heavy-Metal Clusters", "Heavy Metals", 84, 580, "Hazardous", ResourceAbundance.RICH)
                     ),
                     activeExtractionFacilities = 2,
                     surveyQualityPercentage = 84
@@ -575,7 +575,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
             "sys-concordia" -> listOf(
                 CelestialBody(
                     id = "con-1",
-                    name = "Concordia Prime",
+                    name = "Crownspire Prime",
                     type = PlanetType.TERRESTRIAL,
                     orbitalRadiusAu = 1.00f,
                     radiusKm = 6420,
@@ -589,7 +589,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
                 ),
                 CelestialBody(
                     id = "con-2",
-                    name = "Concordia Titan",
+                    name = "Crownspire Major",
                     type = PlanetType.GAS_GIANT,
                     orbitalRadiusAu = 6.40f,
                     radiusKm = 62000,
@@ -713,7 +713,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
             resourceSummary = "Active gas harvesting platforms in upper atmosphere; depleted inner terrestrial crust.",
             sovereigntyType = SovereigntyType.NPC_FACTION,
             sovereignId = "fac-solari-dir",
-            sovereignName = "Solari Directorate",
+            sovereignName = "Solar Directorate",
             isCapital = false,
             isCommerceHub = true,
             isBorderGateway = false,
@@ -736,7 +736,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
             overallAbundance = ResourceAbundance.RICH,
             resources = listOf(
                 SystemResource("Titanium Core Veins", "Heavy Metals", ResourceAbundance.RICH, 88),
-                SystemResource("Tritanium Ore", "Industrial Metals", ResourceAbundance.RICH, 82)
+                SystemResource("Nickel-Iron Ore", "Industrial Metals", ResourceAbundance.RICH, 82)
             ),
             asteroidBelts = 5,
             celestialCount = 11,
@@ -744,7 +744,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
             resourceSummary = "Dense metallic asteroid belt supplying planetary foundries and heavy shipyards.",
             sovereigntyType = SovereigntyType.NPC_FACTION,
             sovereignId = "fac-solari-dir",
-            sovereignName = "Solari Directorate",
+            sovereignName = "Solar Directorate",
             isCapital = false,
             isCommerceHub = false,
             isBorderGateway = true,
@@ -935,7 +935,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
             resourceSummary = "Solar corona platforms provide massive clean plasma fuel for the core systems.",
             sovereigntyType = SovereigntyType.NPC_FACTION,
             sovereignId = "fac-solari-dir",
-            sovereignName = "Solari Directorate",
+            sovereignName = "Solar Directorate",
             isCapital = true,
             isCommerceHub = true,
             isBorderGateway = false,
@@ -951,7 +951,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
             systemId = "sys-meridian",
             name = "Meridian Prime",
             regionId = "reg-concordat-core",
-            regionName = "Concordat Expanse",
+            regionName = "Meridian Trade Core",
             securityRating = 3.8f,
             threatLevel = ThreatLevel.MODERATE,
             overallAbundance = ResourceAbundance.PRISTINE,
@@ -965,7 +965,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
             resourceSummary = "Vast untapped metallic planetary rings yielding pristine precious metals.",
             sovereigntyType = SovereigntyType.NPC_FACTION,
             sovereignId = "fac-concordat",
-            sovereignName = "Concordat of Worlds",
+            sovereignName = "Meridian League",
             isCapital = false,
             isCommerceHub = false,
             isBorderGateway = true,
@@ -989,7 +989,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
         MarketItem("com-bio-rations", "Nutrient Paste", CommodityCategory.CONSUMER, "crates", 110L, 95L, 1200, 1500, "sta-kepler-prime", "Kepler Prime Orbital", "sys-kepler", "Kepler", "reg-solari-core", System.currentTimeMillis(), 0),
         MarketItem("com-med-supplies", "Broad-Spectrum Antivirals", CommodityCategory.MEDICAL, "cases", 890L, 820L, 95, 320, "sta-kepler-prime", "Kepler Prime Orbital", "sys-kepler", "Kepler", "reg-solari-core", System.currentTimeMillis(), 12),
         MarketItem("com-plasma-cells", "Containment Plasma Cells", CommodityCategory.INDUSTRIAL, "tons", 520L, 480L, 340, 600, "sta-kepler-prime", "Kepler Prime Orbital", "sys-kepler", "Kepler", "reg-solari-core", System.currentTimeMillis(), -5),
-        MarketItem("com-tritanium-ore", "Raw Tritanium Ore", CommodityCategory.METALS, "tons", 320L, 295L, 680, 1100, "sta-kepler-prime", "Kepler Prime Orbital", "sys-kepler", "Kepler", "reg-solari-core", System.currentTimeMillis(), 24),
+        MarketItem("com-tritanium-ore", "Raw Nickel-Iron Ore", CommodityCategory.METALS, "tons", 320L, 295L, 680, 1100, "sta-kepler-prime", "Kepler Prime Orbital", "sys-kepler", "Kepler", "reg-solari-core", System.currentTimeMillis(), 24),
         MarketItem("com-hyper-fuel", "Sub-Space Hyper-Fuel", CommodityCategory.INDUSTRIAL, "tons", 980L, 915L, 240, 750, "sta-kepler-prime", "Kepler Prime Orbital", "sys-kepler", "Kepler", "reg-solari-core", System.currentTimeMillis(), 48),
         MarketItem("com-quantum-cores", "Quantum Logic Cores", CommodityCategory.TECHNOLOGY, "units", 3400L, 3180L, 65, 150, "sta-kepler-prime", "Kepler Prime Orbital", "sys-kepler", "Kepler", "reg-solari-core", System.currentTimeMillis(), -85),
         MarketItem("com-munitions", "Proximity Rail Munitions", CommodityCategory.WEAPONRY, "cases", 760L, 710L, 310, 420, "sta-kepler-prime", "Kepler Prime Orbital", "sys-kepler", "Kepler", "reg-solari-core", System.currentTimeMillis(), 8),
@@ -1003,9 +1003,9 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
         MarketItem("com-superconductors", "Superconductors", CommodityCategory.TECHNOLOGY, "units", 1720L, 1650L, 45, 600, "sta-cinder-smuggler", "Cinder Smuggler Port", "sys-cinder", "Cinder", "reg-outer-rim", System.currentTimeMillis(), 85),
         MarketItem("com-superconductors", "Superconductors", CommodityCategory.TECHNOLOGY, "units", 1580L, 1510L, 90, 520, "sta-crossroads-citadel", "Crossroads Central Citadel", "sys-crossroads", "Crossroads", "reg-neutral-buffer", System.currentTimeMillis(), 20),
 
-        // Regional comparisons for Tritanium Ore
-        MarketItem("com-tritanium-ore", "Raw Tritanium Ore", CommodityCategory.METALS, "tons", 440L, 415L, 180, 950, "sta-harrow-foundry", "Harrow Deep Foundry", "sys-harrow", "Harrow", "reg-solari-core", System.currentTimeMillis(), 30),
-        MarketItem("com-tritanium-ore", "Raw Tritanium Ore", CommodityCategory.METALS, "tons", 510L, 485L, 95, 1200, "sta-cinder-smuggler", "Cinder Smuggler Port", "sys-cinder", "Cinder", "reg-outer-rim", System.currentTimeMillis(), 55),
+        // Regional comparisons for legacy mock ore commodity id
+        MarketItem("com-tritanium-ore", "Raw Nickel-Iron Ore", CommodityCategory.METALS, "tons", 440L, 415L, 180, 950, "sta-harrow-foundry", "Harrow Deep Foundry", "sys-harrow", "Harrow", "reg-solari-core", System.currentTimeMillis(), 30),
+        MarketItem("com-tritanium-ore", "Raw Nickel-Iron Ore", CommodityCategory.METALS, "tons", 510L, 485L, 95, 1200, "sta-cinder-smuggler", "Cinder Smuggler Port", "sys-cinder", "Cinder", "reg-outer-rim", System.currentTimeMillis(), 55),
 
         // Regional comparisons for Hyper-Fuel
         MarketItem("com-hyper-fuel", "Sub-Space Hyper-Fuel", CommodityCategory.INDUSTRIAL, "tons", 1150L, 1080L, 120, 600, "sta-vantage-relay", "Vantage Orbital Relay", "sys-vantage", "Vantage", "reg-neutral-buffer", System.currentTimeMillis(), 65),
@@ -1104,7 +1104,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
         CommsConversation("conv-guild", "Iron Vanguard Command", ConversationType.GUILD, "Kaelen: All escorts lock Gate 2 coordinates.", System.currentTimeMillis() - 120000L, 2, "142 pilots"),
         CommsConversation("conv-sys", "Kepler Local Broadcast", ConversationType.SYSTEM, "Station Traffic: Automated customs beacon open.", System.currentTimeMillis() - 600000L, 0, "Kepler System"),
         CommsConversation("conv-kaelen", "Commander Kaelen", ConversationType.DIRECT, "Check out the loadout balance on that Raptor.", System.currentTimeMillis() - 1800000L, 0, "Direct (Encrypted)"),
-        CommsConversation("conv-trade", "Crossroads Trade Band", ConversationType.TRADE, "WTB 50t Refined Titanium at 790 CR!", System.currentTimeMillis() - 3600000L, 0, "Commercial Feed")
+        CommsConversation("conv-trade", "Crossroads Trade Band", ConversationType.TRADE, "WTB 50t Refined Titanium at 790 GSC!", System.currentTimeMillis() - 3600000L, 0, "Commercial Feed")
     )
 
     private val messagesMap = mutableMapOf(
@@ -1699,7 +1699,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
         TacticalMission(
             id = "mis-recon-03",
             title = "Anomalous Tachyon Frequency Scan",
-            briefing = "Unidentified graviton waveforms detected originating from Harrow Core metallic crust. Orbit the body, align high-band sensor arrays, and transmit encrypted telemetry packets to GalNet.",
+            briefing = "Unidentified graviton waveforms detected originating from Harrow Core metallic crust. Orbit the body, align high-band sensor arrays, and transmit encrypted telemetry packets to UniNet.",
             sponsorFaction = "Astra Scientific Research Consortium",
             category = MissionCategory.RECON_SURVEILLANCE,
             threatLevel = ThreatLevel.LOW,
@@ -1759,7 +1759,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
                 ),
                 TacticalObjective(
                     id = "obj-303",
-                    title = "Upload Encrypted Log to GalNet Node",
+                    title = "Upload Encrypted Log to UniNet Node",
                     description = "Transmit collected data to orbital research uplink.",
                     status = ObjectiveStatus.COMPLETED,
                     currentProgress = 1,
@@ -1789,13 +1789,13 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
         TacticalMission(
             id = "mis-escort-04",
             title = "Alliance Superfreighter Convoy Escort",
-            briefing = "Escort superfreighter 'Goliath Dawn' carrying 1,200 tons of rare tritanium alloys through Harrow-Crossroads trunk line. Repel insurgent interceptors and maintain defensive perimeter.",
+            briefing = "Escort superfreighter 'Goliath Dawn' carrying 1,200 tons of rare high-strength alloys through Harrow-Crossroads trunk line. Repel insurgent interceptors and maintain defensive perimeter.",
             sponsorFaction = "Free Trade Logistics Consortium",
             category = MissionCategory.CARGO_ESCORT,
             threatLevel = ThreatLevel.HIGH,
             creditReward = 340000L,
             standingReward = 30,
-            bonusRewardItem = "50t Pure Tritanium Plates",
+            bonusRewardItem = "50t High-Strength Alloy Plates",
             primaryLocation = LocationMarker(
                 systemId = "sys-crossroads",
                 systemName = "Crossroads Central",
@@ -1878,11 +1878,11 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
         ),
         TacticalMission(
             id = "mis-blackops-05",
-            title = "Operation Phantom Courier (0.0 Space)",
-            briefing = "Aurelia Nexus is an unsanctioned 0.0 sovereign lawless zone. Infiltrate the shattered planetary core fragment, extract prototype morphite nanites from abandoned laboratory vault, and exfiltrate undetected.",
-            sponsorFaction = "Aurelia Shadow Syndicate",
+            title = "Operation Phantom Courier",
+            briefing = "A restricted research facility in the Aurelian Synod's Aurelia system has gone dark after a suspected internal breach. Under sealed authorization, recover prototype metamaterial samples and extract without compromising civilian infrastructure.",
+            sponsorFaction = "Aurelian Synod",
             category = MissionCategory.COVERT_BLACK_OPS,
-            threatLevel = ThreatLevel.EXTREME,
+            threatLevel = ThreatLevel.HIGH,
             creditReward = 520000L,
             standingReward = 40,
             bonusRewardItem = "Experimental Cloaking Baffle",
@@ -1892,15 +1892,15 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
                 celestialBodyName = "Aurelia Research World",
                 beaconCode = "ANOM-AUR-00",
                 coordinates = "X: +1.30 AU, Y: -14.2 AU, Z: -9.8 AU",
-                securityRating = 0.0f,
+                securityRating = 3.0f,
                 distanceLy = 31.0f,
                 jumpCount = 3
             ),
             objectives = listOf(
                 TacticalObjective(
                     id = "obj-501",
-                    title = "Infiltrate Shattered Core Fragment",
-                    description = "Slip past perimeter patrol drones using low thermal signature.",
+                    title = "Infiltrate Restricted Survey Site",
+                    description = "Reach the sealed research perimeter without escalating local security response.",
                     status = ObjectiveStatus.PENDING,
                     currentProgress = 0,
                     targetProgress = 1,
@@ -1911,15 +1911,15 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
                         celestialBodyName = "Outer Survey Site B",
                         beaconCode = "ANOM-AUR-00",
                         coordinates = "X: +1.30 AU, Y: -14.2 AU, Z: -9.8 AU",
-                        securityRating = 0.0f,
+                        securityRating = 3.0f,
                         distanceLy = 31.0f,
                         jumpCount = 3
                     )
                 ),
                 TacticalObjective(
                     id = "obj-502",
-                    title = "Extract 3 Encrypted Prototype Cores",
-                    description = "Hack the vault mainframe and download military-grade nanite schematics.",
+                    title = "Recover 3 Encrypted Prototype Cores",
+                    description = "Recover the authorized encrypted research package from the isolated facility.",
                     status = ObjectiveStatus.PENDING,
                     currentProgress = 0,
                     targetProgress = 3,
@@ -1930,7 +1930,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
                         celestialBodyName = "Sub-Surface Research Facility",
                         beaconCode = "VAULT-AUR-X",
                         coordinates = "X: +1.32 AU, Y: -14.0 AU, Z: -9.6 AU",
-                        securityRating = 0.0f,
+                        securityRating = 3.0f,
                         distanceLy = 31.0f,
                         jumpCount = 3
                     )
