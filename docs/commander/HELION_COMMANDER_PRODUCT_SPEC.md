@@ -8,7 +8,7 @@ A phone/tablet companion for away-from-client access to commander information, f
 2. Local planning is not server truth.
 3. Mutations are requests validated by the HELION server.
 4. Offline mode may show cached data and local plans but must not pretend to complete server transactions.
-5. DEVELOPMENT, PRIVATE_TEST, and PRODUCTION are isolated.
+5. DEMO, PRIVATE_TEST, and PRODUCTION are isolated.
 6. Mock/demo provenance must be visible during development.
 
 ## Safe local state

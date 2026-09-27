@@ -136,9 +136,18 @@ fun HelionHeader(
                 }
             }
 
-            // Quick Status Pill
-            if (commander != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Environment Badge (always visible across all screens)
+                EnvironmentBadge(
+                    environment = environment,
+                    modifier = Modifier
+                        .clickable { onEnvironmentClick() }
+                        .testTag("header_environment_badge")
+                )
+
+                if (commander != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+
                     // GSC
                     Surface(
                         shape = RoundedCornerShape(4.dp),
@@ -199,11 +208,6 @@ fun HelionHeader(
                         }
                     }
                 }
-            } else {
-                EnvironmentBadge(
-                    environment = environment,
-                    modifier = Modifier.clickable { onEnvironmentClick() }
-                )
             }
         }
     }

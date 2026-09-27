@@ -4,7 +4,25 @@
 The persistent HELION server is authoritative. Commander is an untrusted client.
 
 ## Current state
-This repository currently instantiates FakeCompanionApi. It is not connected to production, private-test, or development HELION servers.
+This repository supports multi-environment server profiles via `ServerEnvironment` (`DEMO`, `PRIVATE_TEST`, `PRODUCTION`).
+- `DEMO` routes to `FakeCompanionApi` for local mock and offline development.
+- `PRIVATE_TEST` and `PRODUCTION` route to `RealCompanionApi`. When unconfigured, they fail honestly with `ServerNotConfiguredException` and do not fall back to mock data.
+
+## Multi-Environment Foundation (M1)
+1. **Environment Profiles:**
+   - `DEMO`: Local simulated Kepler cluster dataset. Safe for offline development and UI testing.
+   - `PRIVATE_TEST`: Isolated staging universe (LAB-SEC-7) for verified test deployments.
+   - `PRODUCTION`: Live persistent HELION universe (HELION-1).
+2. **Interface and Routing:**
+   - `CompanionApiFactory` manages API creation and profile descriptors.
+   - `DelegatingCompanionApi` dynamically delegates to the active environment's API.
+   - `RealCompanionApi` implements `CompanionApi` for real server connectivity. Crucial Invariant: `RealCompanionApi` MUST NOT implement `DevelopmentSimulationApi`.
+3. **Environment Isolation Invariants:**
+   - **Credential Isolation:** `AuthCredentialStore` partitions bearer tokens strictly by environment namespace (`token_demo`, `token_private_test`, `token_production`). Tokens never crossover between test and production.
+   - **Database Cache Isolation:** `AppDatabase` maintains independent physical SQLite database files per environment (`helion_commander_demo.db`, `helion_commander_test.db`, `helion_commander_production.db`). Test state never leaks into production.
+   - **Persistent Selection:** User selection persists via `EnvironmentPreferences`. The application does not silently switch or fallback environments if an endpoint is unreachable.
+   - **Production Safeguard:** Switching into `PRODUCTION` requires explicit user confirmation via an alert dialog in `SettingsScreen`.
+   - **Status Probing:** `ServerStatus` probe read model reports service name, server version, protocol version, and maintenance status. Unconfigured real servers report explicit unconfigured failure.
 
 ## API discipline
 docs/COMPANION_API_CONTRACT.md is a proposal until each endpoint, authentication mechanism, DTO, and event is verified against the real server.

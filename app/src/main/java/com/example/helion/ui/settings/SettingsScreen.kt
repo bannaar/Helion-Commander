@@ -55,12 +55,56 @@ import com.example.ui.theme.HelionTextMuted
 import com.example.ui.theme.HelionTextPrimary
 import com.example.ui.theme.HelionTextSecondary
 
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import com.example.helion.core.model.ServerEnvironment
+
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    // Safeguard confirmation dialog for switching to PRODUCTION
+    if (state.pendingProductionSwitch) {
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelProductionSwitch() },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = HelionAmber)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("SWITCH TO PRODUCTION", fontWeight = FontWeight.Bold, color = HelionTextPrimary)
+                }
+            },
+            text = {
+                Text(
+                    text = "You are connecting to the persistent HELION universe.\n\nTest assets, GSC, ships, progression, and developer state do not transfer.\n\nProduction actions may affect persistent live state.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = HelionTextSecondary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmProductionSwitch() },
+                    colors = ButtonDefaults.buttonColors(containerColor = HelionAmber, contentColor = HelionDeepGraphite)
+                ) {
+                    Text("CONNECT TO PRODUCTION", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { viewModel.cancelProductionSwitch() },
+                    border = BorderStroke(1.dp, HelionBorder)
+                ) {
+                    Text("CANCEL", color = HelionTextPrimary)
+                }
+            },
+            containerColor = HelionSurfaceVariant,
+            shape = RoundedCornerShape(8.dp)
+        )
+    }
 
     LazyColumn(
         modifier = modifier
@@ -82,23 +126,33 @@ fun SettingsScreen(
         item {
             HelionCard(
                 title = "Universe Server Environment",
-                badgeText = state.currentEnvironment.name,
-                accentColor = HelionAmber
+                badgeText = state.currentServerEnvironment.badgeLabel,
+                accentColor = when (state.currentServerEnvironment) {
+                    ServerEnvironment.DEMO -> HelionCyan
+                    ServerEnvironment.PRIVATE_TEST -> HelionAmber
+                    ServerEnvironment.PRODUCTION -> HelionHighSecGreen
+                }
             ) {
                 Text(
-                    text = "Select the target environment profile. This prototype currently uses local mock data and is not connected to a HELION server.",
+                    text = "Select the target universe profile. The active environment governs server validation, local cache isolation, and session authentication.",
                     style = MaterialTheme.typography.bodySmall,
                     color = HelionTextSecondary
                 )
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    HelionEnvironment.values().forEach { env ->
-                        val isSelected = state.currentEnvironment == env
+                    ServerEnvironment.values().forEach { env ->
+                        val isSelected = state.currentServerEnvironment == env
+                        val configState = when (env) {
+                            ServerEnvironment.DEMO -> "CONFIGURED (LOCAL SIM)"
+                            ServerEnvironment.PRIVATE_TEST -> "NOT CONNECTED"
+                            ServerEnvironment.PRODUCTION -> "NOT CONNECTED"
+                        }
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { viewModel.switchEnvironment(env) },
+                                .clickable { viewModel.requestSwitchEnvironment(env) }
+                                .testTag("env_selector_${env.id}"),
                             shape = RoundedCornerShape(6.dp),
                             color = if (isSelected) HelionSurfaceVariant else HelionSurfaceHigh,
                             border = BorderStroke(1.dp, if (isSelected) HelionCyan else HelionBorder)
@@ -110,15 +164,107 @@ fun SettingsScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(text = env.displayName, style = MaterialTheme.typography.titleMedium, color = HelionTextPrimary, fontWeight = FontWeight.Bold)
+                                        Text(
+                                            text = env.displayName,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = HelionTextPrimary,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         if (isSelected) {
-                                            Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = HelionCyan, modifier = Modifier.size(16.dp))
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                tint = HelionCyan,
+                                                modifier = Modifier.size(16.dp)
+                                            )
                                         }
                                     }
-                                    Text(text = env.serverEndpoint, style = MaterialTheme.typography.labelSmall, color = HelionCyan)
-                                    Text(text = env.description, style = MaterialTheme.typography.bodySmall, color = HelionTextSecondary)
+                                    Text(
+                                        text = "STATUS: $configState",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = if (env == ServerEnvironment.DEMO) HelionHighSecGreen else HelionTextMuted,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = env.description,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = HelionTextSecondary
+                                    )
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. SERVER STATUS PROBE CARD
+        item {
+            HelionCard(
+                title = "Server Connection & Status Probe",
+                badgeText = if (state.serverStatus != null) "ONLINE" else "NOT CONNECTED",
+                badgeColor = if (state.serverStatus != null) HelionHighSecGreen else HelionTextMuted,
+                accentColor = HelionCyan
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Target: ${state.currentServerEnvironment.displayName}",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = HelionTextPrimary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        OutlinedButton(
+                            onClick = { viewModel.refreshServerStatus() },
+                            border = BorderStroke(1.dp, HelionBorder)
+                        ) {
+                            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Probe", modifier = Modifier.size(14.dp), tint = HelionCyan)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("PROBE", style = MaterialTheme.typography.labelSmall, color = HelionCyan)
+                        }
+                    }
+
+                    if (state.serverStatus != null) {
+                        val status = state.serverStatus!!
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = HelionSurfaceVariant,
+                            border = BorderStroke(0.8.dp, HelionHighSecGreen.copy(alpha = 0.4f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Text("SERVICE: ${status.serviceName}", style = MaterialTheme.typography.labelSmall, color = HelionHighSecGreen, fontWeight = FontWeight.Bold)
+                                Text("VERSION: ${status.serverVersion} • PROTOCOL: ${status.protocolVersion}", style = MaterialTheme.typography.bodySmall, color = HelionTextPrimary)
+                                Text("MAINTENANCE: ${if (status.maintenance) "YES (SUSPENDED)" else "NO (ACTIVE)"}", style = MaterialTheme.typography.bodySmall, color = HelionTextSecondary)
+                                if (status.message != null) {
+                                    Text(status.message, style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
+                                }
+                            }
+                        }
+                    } else if (state.serverStatusError != null) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = HelionSurfaceVariant,
+                            border = BorderStroke(0.8.dp, HelionBorder),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Text(
+                                    text = state.serverStatusError ?: "Server not configured.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = HelionAmber
+                                )
+                                Text(
+                                    text = "Real ${state.currentServerEnvironment.displayName} companion API endpoint will be configured when the authoritative HELION server adapter is connected.",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = HelionTextMuted
+                                )
                             }
                         }
                     }

@@ -171,13 +171,13 @@ fun SecurityBadge(
 
 @Composable
 fun EnvironmentBadge(
-    environment: HelionEnvironment,
+    environment: com.example.helion.core.model.ServerEnvironment,
     modifier: Modifier = Modifier
 ) {
     val (bgColor, textColor, borderCol) = when (environment) {
-        HelionEnvironment.PRODUCTION -> Triple(Color(0xFF0D3320), HelionHighSecGreen, HelionHighSecGreen.copy(alpha = 0.6f))
-        HelionEnvironment.PRIVATE_TEST -> Triple(Color(0xFF33200D), HelionAmber, HelionAmber.copy(alpha = 0.6f))
-        HelionEnvironment.DEVELOPMENT -> Triple(Color(0xFF1E1033), HelionNullSecPurple, HelionNullSecPurple.copy(alpha = 0.6f))
+        com.example.helion.core.model.ServerEnvironment.PRODUCTION -> Triple(Color(0xFF0D3320), HelionHighSecGreen, HelionHighSecGreen.copy(alpha = 0.6f))
+        com.example.helion.core.model.ServerEnvironment.PRIVATE_TEST -> Triple(Color(0xFF33200D), HelionAmber, HelionAmber.copy(alpha = 0.6f))
+        com.example.helion.core.model.ServerEnvironment.DEMO -> Triple(Color(0xFF1E1033), HelionCyan, HelionCyan.copy(alpha = 0.6f))
     }
 
     Surface(
@@ -187,13 +187,21 @@ fun EnvironmentBadge(
         border = BorderStroke(1.dp, borderCol)
     ) {
         Text(
-            text = environment.displayName,
+            text = environment.badgeLabel,
             color = textColor,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
         )
     }
+}
+
+@Composable
+fun EnvironmentBadge(
+    environment: HelionEnvironment,
+    modifier: Modifier = Modifier
+) {
+    EnvironmentBadge(environment.serverEnv, modifier)
 }
 
 @Composable

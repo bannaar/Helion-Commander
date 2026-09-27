@@ -1134,6 +1134,22 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
         Result.success(Unit)
     }
 
+    override fun getServerEnvironment(): com.example.helion.core.model.ServerEnvironment =
+        com.example.helion.core.model.ServerEnvironment.DEMO
+
+    override suspend fun getServerStatus(): Result<com.example.helion.core.model.ServerStatus> = mutex.withLock {
+        Result.success(
+            com.example.helion.core.model.ServerStatus(
+                serviceName = "HELION-DEMO-SIM",
+                environment = com.example.helion.core.model.ServerEnvironment.DEMO,
+                serverVersion = "0.20.0-mock",
+                protocolVersion = "helion-proto-v0.20",
+                maintenance = false,
+                message = "Local simulation running with mock Kepler cluster seed."
+            )
+        )
+    }
+
     override suspend fun getCommanderProfile(): Result<CommanderProfile> = mutex.withLock {
         delay(120)
         Result.success(

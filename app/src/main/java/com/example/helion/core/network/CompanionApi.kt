@@ -12,6 +12,8 @@ import com.example.helion.core.model.MarketTransactionResult
 import com.example.helion.core.model.ModuleItem
 import com.example.helion.core.model.OwnedShipInstance
 import com.example.helion.core.model.ShipDefinition
+import com.example.helion.core.model.ServerEnvironment
+import com.example.helion.core.model.ServerStatus
 import com.example.helion.core.model.SystemNode
 import com.example.helion.core.model.UniverseMessage
 
@@ -20,6 +22,8 @@ interface CompanionApi {
     // Environment & Session
     suspend fun getCurrentEnvironment(): HelionEnvironment
     suspend fun switchEnvironment(env: HelionEnvironment): Result<Unit>
+    fun getServerEnvironment(): ServerEnvironment = ServerEnvironment.DEMO
+    suspend fun getServerStatus(): Result<ServerStatus>
 
     // Commander
     suspend fun getCommanderProfile(): Result<CommanderProfile>

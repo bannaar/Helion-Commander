@@ -28,18 +28,23 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tacticalMissionDao(): TacticalMissionDao
 
     companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
+        private val instances = java.util.concurrent.ConcurrentHashMap<com.example.helion.core.model.ServerEnvironment, AppDatabase>()
 
-        fun getInstance(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
+        fun getInstance(
+            context: Context,
+            environment: com.example.helion.core.model.ServerEnvironment = com.example.helion.core.model.ServerEnvironment.DEMO
+        ): AppDatabase {
+            return instances.computeIfAbsent(environment) { env ->
+                val dbName = when (env) {
+                    com.example.helion.core.model.ServerEnvironment.DEMO -> "helion_commander_demo.db"
+                    com.example.helion.core.model.ServerEnvironment.PRIVATE_TEST -> "helion_commander_test.db"
+                    com.example.helion.core.model.ServerEnvironment.PRODUCTION -> "helion_commander_production.db"
+                }
+                Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "helion_commander_cache.db"
+                    dbName
                 ).fallbackToDestructiveMigration().build()
-                INSTANCE = instance
-                instance
             }
         }
     }
