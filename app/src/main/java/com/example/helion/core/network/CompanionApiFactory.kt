@@ -1,5 +1,6 @@
 package com.example.helion.core.network
 
+import com.example.helion.core.model.ServerEndpoint
 import com.example.helion.core.model.ServerEnvironment
 import com.example.helion.core.model.ServerProfile
 
@@ -9,19 +10,22 @@ interface CompanionApiFactory {
 }
 
 class DefaultCompanionApiFactory(
-    val fakeApi: FakeCompanionApi = FakeCompanionApi()
+    val fakeApi: FakeCompanionApi = FakeCompanionApi(),
+    private val privateTestEndpoint: ServerEndpoint? = null,
+    private val productionEndpoint: ServerEndpoint? = null,
+    private val statusProbe: NativeServerStatusProbe = TlsNativeServerStatusProbe()
 ) : CompanionApiFactory {
 
     private val realTestApi = RealCompanionApi(
         environment = ServerEnvironment.PRIVATE_TEST,
-        baseUrl = null,
-        isConfigured = false
+        endpoint = privateTestEndpoint,
+        statusProbe = statusProbe
     )
 
     private val realProdApi = RealCompanionApi(
         environment = ServerEnvironment.PRODUCTION,
-        baseUrl = null,
-        isConfigured = false
+        endpoint = productionEndpoint,
+        statusProbe = statusProbe
     )
 
     override fun getApi(environment: ServerEnvironment): CompanionApi = when (environment) {
@@ -34,23 +38,29 @@ class DefaultCompanionApiFactory(
         ServerEnvironment.DEMO -> ServerProfile(
             environment = ServerEnvironment.DEMO,
             displayName = "DEMO / OFFLINE",
-            baseUrl = null,
+            endpoint = null,
             isConfigured = true,
             description = "Local mock simulation. Safe for offline development and UI testing."
         )
         ServerEnvironment.PRIVATE_TEST -> ServerProfile(
             environment = ServerEnvironment.PRIVATE_TEST,
             displayName = "PRIVATE TEST",
-            baseUrl = null,
-            isConfigured = false,
-            description = "Isolated staging universe (LAB-SEC-7). Prototype is not connected."
+            endpoint = privateTestEndpoint,
+            description = if (privateTestEndpoint == null) {
+                "Isolated staging universe (LAB-SEC-7). Native TLS endpoint is not configured."
+            } else {
+                "Isolated staging universe (LAB-SEC-7). Native TLS status probe configured for ${privateTestEndpoint.displayAddress}."
+            }
         )
         ServerEnvironment.PRODUCTION -> ServerProfile(
             environment = ServerEnvironment.PRODUCTION,
             displayName = "PRODUCTION",
-            baseUrl = null,
-            isConfigured = false,
-            description = "Persistent live universe (HELION-1). Prototype is not connected."
+            endpoint = productionEndpoint,
+            description = if (productionEndpoint == null) {
+                "Persistent live universe (HELION-1). Native TLS endpoint is not configured."
+            } else {
+                "Persistent live universe (HELION-1). Native TLS status probe configured for ${productionEndpoint.displayAddress}."
+            }
         )
     }
 }

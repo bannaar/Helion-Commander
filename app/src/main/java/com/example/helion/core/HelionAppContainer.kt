@@ -1,7 +1,9 @@
 package com.example.helion.core
 
 import android.content.Context
+import com.example.BuildConfig
 import com.example.helion.core.database.AppDatabase
+import com.example.helion.core.model.ServerEndpoint
 import com.example.helion.core.model.ServerEnvironment
 import com.example.helion.core.network.CompanionApi
 import com.example.helion.core.network.CompanionApiFactory
@@ -23,7 +25,16 @@ import com.example.helion.core.session.EnvironmentPreferences
 class HelionAppContainer(val context: Context) {
     val environmentPreferences = EnvironmentPreferences(context)
     val credentialStore = AuthCredentialStore(context)
-    val apiFactory: CompanionApiFactory = DefaultCompanionApiFactory()
+    val apiFactory: CompanionApiFactory = DefaultCompanionApiFactory(
+        privateTestEndpoint = configuredEndpoint(
+            BuildConfig.HELION_PRIVATE_TEST_HOST,
+            BuildConfig.HELION_PRIVATE_TEST_PORT
+        ),
+        productionEndpoint = configuredEndpoint(
+            BuildConfig.HELION_PRODUCTION_HOST,
+            BuildConfig.HELION_PRODUCTION_PORT
+        )
+    )
 
     var activeEnvironment: ServerEnvironment = environmentPreferences.getSelectedEnvironment()
         private set
@@ -58,6 +69,11 @@ class HelionAppContainer(val context: Context) {
         activeEnvironment = env
         clearEnvironmentScopedInMemoryState()
         settingsRepository.setServerEnvironmentLocally(env)
+    }
+
+    private fun configuredEndpoint(host: String, port: Int): ServerEndpoint? {
+        val normalizedHost = host.trim()
+        return if (normalizedHost.isEmpty()) null else ServerEndpoint(normalizedHost, port)
     }
 
     private fun clearEnvironmentScopedInMemoryState() {

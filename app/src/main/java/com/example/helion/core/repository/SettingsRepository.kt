@@ -61,23 +61,23 @@ class SettingsRepository(
             ServerEnvironment.DEMO -> ServerProfile(
                 environment = ServerEnvironment.DEMO,
                 displayName = "DEMO / OFFLINE",
-                baseUrl = null,
+                endpoint = null,
                 isConfigured = true,
                 description = "Local mock simulation. Safe for offline development and local testing."
             )
             ServerEnvironment.PRIVATE_TEST -> ServerProfile(
                 environment = ServerEnvironment.PRIVATE_TEST,
                 displayName = "PRIVATE TEST",
-                baseUrl = null,
+                endpoint = null,
                 isConfigured = false,
-                description = "Isolated staging universe (LAB-SEC-7). Prototype is not connected."
+                description = "Isolated staging universe (LAB-SEC-7). No endpoint is configured in this repository-local profile."
             )
             ServerEnvironment.PRODUCTION -> ServerProfile(
                 environment = ServerEnvironment.PRODUCTION,
                 displayName = "PRODUCTION",
-                baseUrl = null,
+                endpoint = null,
                 isConfigured = false,
-                description = "Persistent live universe (HELION-1). Prototype is not connected."
+                description = "Persistent live universe (HELION-1). No endpoint is configured in this repository-local profile."
             )
         }
     }

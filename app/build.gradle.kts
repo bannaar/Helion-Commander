@@ -20,6 +20,24 @@ android {
     versionName = "1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    val privateTestHost = (System.getenv("HELION_PRIVATE_TEST_HOST") ?: "")
+      .replace("\\", "\\\\")
+      .replace("\"", "\\\"")
+    val productionHost = (System.getenv("HELION_PRODUCTION_HOST") ?: "")
+      .replace("\\", "\\\\")
+      .replace("\"", "\\\"")
+    val privateTestPort = System.getenv("HELION_PRIVATE_TEST_PORT")
+      ?.toIntOrNull()
+      ?.takeIf { it in 1..65535 } ?: 4242
+    val productionPort = System.getenv("HELION_PRODUCTION_PORT")
+      ?.toIntOrNull()
+      ?.takeIf { it in 1..65535 } ?: 4242
+
+    buildConfigField("String", "HELION_PRIVATE_TEST_HOST", "\"$privateTestHost\"")
+    buildConfigField("int", "HELION_PRIVATE_TEST_PORT", privateTestPort.toString())
+    buildConfigField("String", "HELION_PRODUCTION_HOST", "\"$productionHost\"")
+    buildConfigField("int", "HELION_PRODUCTION_PORT", productionPort.toString())
   }
 
   signingConfigs {

@@ -11,6 +11,7 @@ import com.example.helion.core.model.MarketTransactionRequest
 import com.example.helion.core.model.MarketTransactionResult
 import com.example.helion.core.model.ModuleItem
 import com.example.helion.core.model.OwnedShipInstance
+import com.example.helion.core.model.ServerEndpoint
 import com.example.helion.core.model.ServerEnvironment
 import com.example.helion.core.model.ServerStatus
 import com.example.helion.core.model.ShipDefinition
@@ -19,7 +20,7 @@ import com.example.helion.core.model.TacticalMission
 import com.example.helion.core.model.UniverseMessage
 
 class ServerNotConfiguredException(message: String) : Exception(message)
-class ServerUnavailableException(message: String) : Exception(message)
+class ServerUnavailableException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 /**
  * RealCompanionApi represents the communication bridge to an authoritative HELION universe server.
@@ -31,9 +32,12 @@ class ServerUnavailableException(message: String) : Exception(message)
  */
 class RealCompanionApi(
     val environment: ServerEnvironment,
-    val baseUrl: String? = null,
-    val isConfigured: Boolean = false
+    val endpoint: ServerEndpoint? = null,
+    private val statusProbe: NativeServerStatusProbe = TlsNativeServerStatusProbe()
 ) : CompanionApi {
+
+    val isConfigured: Boolean
+        get() = endpoint != null
 
     init {
         require(environment != ServerEnvironment.DEMO) {
@@ -41,13 +45,19 @@ class RealCompanionApi(
         }
     }
 
-    private fun <T> notConfiguredFailure(operation: String): Result<T> {
-        val msg = if (!isConfigured || baseUrl.isNullOrBlank()) {
-            "SERVER NOT CONFIGURED: ${environment.displayName} has no verified endpoint."
-        } else {
-            "SERVER API NOT AVAILABLE: Operation '$operation' is not yet implemented on the authoritative ${environment.displayName} server."
+    private fun <T> unavailableOperation(operation: String): Result<T> {
+        if (!isConfigured) {
+            return Result.failure(
+                ServerNotConfiguredException(
+                    "SERVER NOT CONFIGURED: ${environment.displayName} has no verified endpoint."
+                )
+            )
         }
-        return Result.failure(ServerNotConfiguredException(msg))
+        return Result.failure(
+            ServerUnavailableException(
+                "SERVER OPERATION NOT IMPLEMENTED: '$operation' is not yet integrated for ${environment.displayName}."
+            )
+        )
     }
 
     override fun getServerEnvironment(): ServerEnvironment = environment
@@ -60,115 +70,111 @@ class RealCompanionApi(
     }
 
     override suspend fun getServerStatus(): Result<ServerStatus> {
-        if (!isConfigured || baseUrl.isNullOrBlank()) {
-            return Result.failure(
-                ServerNotConfiguredException("SERVER NOT CONFIGURED: ${environment.displayName} has no verified endpoint.")
-            )
-        }
-        return Result.failure(
-            ServerUnavailableException("SERVER API NOT AVAILABLE: Status probe endpoint is not yet connected for ${environment.displayName}.")
+        val configuredEndpoint = endpoint ?: return Result.failure(
+            ServerNotConfiguredException("SERVER NOT CONFIGURED: ${environment.displayName} has no verified endpoint.")
         )
+        return statusProbe.probe(environment, configuredEndpoint)
     }
 
     // Commander
     override suspend fun getCommanderProfile(): Result<CommanderProfile> =
-        notConfiguredFailure("getCommanderProfile")
+        unavailableOperation("getCommanderProfile")
 
     // Fleet & Ships
     override suspend fun getOwnedShips(): Result<List<OwnedShipInstance>> =
-        notConfiguredFailure("getOwnedShips")
+        unavailableOperation("getOwnedShips")
 
     override suspend fun getShipDefinition(hullId: String): Result<ShipDefinition> =
-        notConfiguredFailure("getShipDefinition")
+        unavailableOperation("getShipDefinition")
 
     override suspend fun getAllShipDefinitions(): Result<List<ShipDefinition>> =
-        notConfiguredFailure("getAllShipDefinitions")
+        unavailableOperation("getAllShipDefinitions")
 
     override suspend fun getAvailableModules(): Result<List<ModuleItem>> =
-        notConfiguredFailure("getAvailableModules")
+        unavailableOperation("getAvailableModules")
 
     override suspend fun setActiveShip(shipInstanceId: String): Result<OwnedShipInstance> =
-        notConfiguredFailure("setActiveShip")
+        unavailableOperation("setActiveShip")
 
     override suspend fun applyLoadout(
         shipInstanceId: String,
         plannedModules: Map<String, String>
-    ): Result<OwnedShipInstance> = notConfiguredFailure("applyLoadout")
+    ): Result<OwnedShipInstance> = unavailableOperation("applyLoadout")
 
     override suspend fun requestLiveryUpdate(
         shipInstanceId: String,
         liveryId: String
-    ): Result<OwnedShipInstance> = notConfiguredFailure("requestLiveryUpdate")
+    ): Result<OwnedShipInstance> = unavailableOperation("requestLiveryUpdate")
 
     override suspend fun performShipMaintenance(shipInstanceId: String): Result<OwnedShipInstance> =
-        notConfiguredFailure("performShipMaintenance")
+        unavailableOperation("performShipMaintenance")
 
     // Universe & Navigation
     override suspend fun getGalaxySystems(): Result<Map<String, SystemNode>> =
-        notConfiguredFailure("getGalaxySystems")
+        unavailableOperation("getGalaxySystems")
 
     override suspend fun getSystemDetails(systemId: String): Result<SystemNode> =
-        notConfiguredFailure("getSystemDetails")
+        unavailableOperation("getSystemDetails")
 
     // Regional Market
     override suspend fun getMarketItems(stationId: String?): Result<List<MarketItem>> =
-        notConfiguredFailure("getMarketItems")
+        unavailableOperation("getMarketItems")
 
     override suspend fun getAllRegionalMarkets(): Result<List<MarketItem>> =
-        notConfiguredFailure("getAllRegionalMarkets")
+        unavailableOperation("getAllRegionalMarkets")
 
     override suspend fun executeMarketTransaction(request: MarketTransactionRequest): Result<MarketTransactionResult> =
-        notConfiguredFailure("executeMarketTransaction")
+        unavailableOperation("executeMarketTransaction")
 
     // GalNet / UniNet
     override suspend fun getGalNetArticles(): Result<List<GalNetArticle>> =
-        notConfiguredFailure("getGalNetArticles")
+        unavailableOperation("getGalNetArticles")
 
     override suspend fun markArticleRead(articleId: String): Result<Unit> =
-        notConfiguredFailure("markArticleRead")
+        unavailableOperation("markArticleRead")
 
     // Guild
     override suspend fun getGuildInfo(): Result<GuildInfo> =
-        notConfiguredFailure("getGuildInfo")
+        unavailableOperation("getGuildInfo")
 
     override suspend fun postGuildNotice(title: String, body: String): Result<Unit> =
-        notConfiguredFailure("postGuildNotice")
+        unavailableOperation("postGuildNotice")
 
     // Comms
     override suspend fun getConversations(): Result<List<CommsConversation>> =
-        notConfiguredFailure("getConversations")
+        unavailableOperation("getConversations")
 
     override suspend fun getMessages(conversationId: String): Result<List<UniverseMessage>> =
-        notConfiguredFailure("getMessages")
+        unavailableOperation("getMessages")
 
     override suspend fun sendMessage(conversationId: String, body: String): Result<UniverseMessage> =
-        notConfiguredFailure("sendMessage")
+        unavailableOperation("sendMessage")
 
     // Tactical Missions & Fleet Tasks
     override suspend fun getTacticalMissions(): Result<List<TacticalMission>> =
-        notConfiguredFailure("getTacticalMissions")
+        unavailableOperation("getTacticalMissions")
 
     override suspend fun advanceMissionObjective(
         missionId: String,
         objectiveId: String,
         increment: Int
-    ): Result<TacticalMission> = notConfiguredFailure("advanceMissionObjective")
+    ): Result<TacticalMission> = unavailableOperation("advanceMissionObjective")
 
     override suspend fun updateFleetTaskStatus(
         missionId: String,
         status: com.example.helion.core.model.FleetTaskStatus,
         progressDelta: Float
-    ): Result<TacticalMission> = notConfiguredFailure("updateFleetTaskStatus")
+    ): Result<TacticalMission> = unavailableOperation("updateFleetTaskStatus")
 
     override suspend fun acceptMissionContract(missionId: String): Result<TacticalMission> =
-        notConfiguredFailure("acceptMissionContract")
+        unavailableOperation("acceptMissionContract")
 
     override suspend fun claimMissionReward(missionId: String): Result<TacticalMission> =
-        notConfiguredFailure("claimMissionReward")
+        unavailableOperation("claimMissionReward")
 
     override suspend fun setMissionPriority(missionId: String, isPriority: Boolean): Result<TacticalMission> =
-        notConfiguredFailure("setMissionPriority")
+        unavailableOperation("setMissionPriority")
 
     override suspend fun abandonMission(missionId: String): Result<Unit> =
-        notConfiguredFailure("abandonMission")
+        unavailableOperation("abandonMission")
 }

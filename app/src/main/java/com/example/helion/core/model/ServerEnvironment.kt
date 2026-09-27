@@ -4,29 +4,25 @@ enum class ServerEnvironment(
     val id: String,
     val displayName: String,
     val badgeLabel: String,
-    val description: String,
-    val defaultBaseUrl: String?
+    val description: String
 ) {
     DEMO(
         id = "demo",
         displayName = "DEMO / OFFLINE",
         badgeLabel = "DEMO // OFFLINE",
-        description = "Local prototype simulation using mock data. Fully safe for offline development and local UI evaluation.",
-        defaultBaseUrl = null
+        description = "Local prototype simulation using mock data. Fully safe for offline development and local UI evaluation."
     ),
     PRIVATE_TEST(
         id = "private_test",
         displayName = "PRIVATE TEST",
         badgeLabel = "TEST // PRIVATE TEST UNIVERSE",
-        description = "Target profile for the isolated private test universe (LAB-SEC-7). This build remains NOT CONFIGURED until a verified server endpoint is connected.",
-        defaultBaseUrl = null
+        description = "Target profile for the isolated private test universe (LAB-SEC-7). Requires an explicitly configured native TLS endpoint."
     ),
     PRODUCTION(
         id = "production",
         displayName = "PRODUCTION",
         badgeLabel = "LIVE // PERSISTENT UNIVERSE",
-        description = "Target profile for the single persistent HELION universe. This build remains NOT CONFIGURED until a verified production endpoint is connected.",
-        defaultBaseUrl = null
+        description = "Target profile for the single persistent HELION universe. Requires an explicitly configured native TLS endpoint."
     );
 
     companion object {
@@ -37,19 +33,32 @@ enum class ServerEnvironment(
     }
 }
 
+data class ServerEndpoint(
+    val host: String,
+    val port: Int = 4242
+) {
+    init {
+        require(host.isNotBlank()) { "Server endpoint host must not be blank." }
+        require(port in 1..65535) { "Server endpoint port must be between 1 and 65535." }
+    }
+
+    val displayAddress: String
+        get() = "$host:$port"
+}
+
 data class ServerProfile(
     val environment: ServerEnvironment,
     val displayName: String = environment.displayName,
-    val baseUrl: String? = environment.defaultBaseUrl,
-    val isConfigured: Boolean = false,
+    val endpoint: ServerEndpoint? = null,
+    val isConfigured: Boolean = endpoint != null,
     val description: String = environment.description
 )
 
 data class ServerStatus(
     val serviceName: String,
     val environment: ServerEnvironment,
-    val serverVersion: String,
+    val serverVersion: String? = null,
     val protocolVersion: String,
-    val maintenance: Boolean,
+    val maintenance: Boolean? = null,
     val message: String? = null
 )

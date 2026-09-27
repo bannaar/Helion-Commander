@@ -68,7 +68,7 @@ class ServerEnvironmentIsolationTest {
         assertTrue("DEMO status must succeed with simulated probe", statusResult.isSuccess)
         val status = statusResult.getOrThrow()
         assertEquals(ServerEnvironment.DEMO, status.environment)
-        assertTrue("DEMO must be clearly labeled as mock/simulated", status.serverVersion.contains("mock"))
+        assertTrue("DEMO must be clearly labeled as mock/simulated", status.serverVersion?.contains("mock") == true)
     }
 
     @Test

@@ -43,5 +43,19 @@ Aurelia is an Aurelian Synod center, not ordinary player-owned 0.0 space.
 Zero Space is 0.0 Known Space and is not The Null.
 Riftspace is outside the 200-system count.
 
+## Verified native transport facts
+
+Current HELION native-server status behavior is verified against `bannaar/Helion` `main` at `3b7fd52bb1fd36d6933eff0bbff35a3138c22568`:
+
+- raw TLS transport, TLS 1.2+ required;
+- default native port 4242;
+- native protocol version 2;
+- initial greeting `WELCOME Helion/2`;
+- no verified REST/WebSocket transport for Commander;
+- the greeting does not advertise a server software version or maintenance state;
+- `STATE` exists pre-auth but is not required for status probing.
+
+Do not replace these facts with assumptions from the proposed API document.
+
 ## Before editing
 Audit whether each feature is VERIFIED SERVER, LOCAL/CACHED, MOCKED, PLANNED, or UNKNOWN. Never silently upgrade a mock into a production claim.

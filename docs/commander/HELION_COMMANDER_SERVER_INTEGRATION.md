@@ -7,6 +7,7 @@ The persistent HELION server is authoritative. Commander is an untrusted client.
 This repository supports multi-environment server profiles via `ServerEnvironment` (`DEMO`, `PRIVATE_TEST`, `PRODUCTION`).
 - `DEMO` routes to `FakeCompanionApi` for local mock and offline development.
 - `PRIVATE_TEST` and `PRODUCTION` route to `RealCompanionApi`. When unconfigured, they fail honestly with `ServerNotConfiguredException` and do not fall back to mock data.
+- The first real-server operation is now implemented as a raw native TLS compatibility/status probe. It verifies the authoritative server's `WELCOME Helion/2` greeting and does not invent REST or WebSocket behavior.
 
 ## Multi-Environment Foundation (M1)
 1. **Environment Profiles:**
@@ -24,7 +25,7 @@ This repository supports multi-environment server profiles via `ServerEnvironmen
    - **In-Memory Isolation:** Commander, fleet, universe, market, UniNet, Guild, comms, and mission repository state is cleared on an environment transition before target-environment refreshes occur.
    - **Persistent Selection:** User selection persists via `EnvironmentPreferences`. `HelionAppContainer` is the runtime routing authority and updates the settings environment flow as part of the same local transition. The application does not silently switch or fallback environments if an endpoint is unreachable.
    - **Production Safeguard:** Switching into `PRODUCTION` requires explicit user confirmation via an alert dialog in `SettingsScreen`.
-   - **Status Probing:** `ServerStatus` probe read model reports service name, server version, protocol version, and maintenance status. DEMO is labeled as a local simulation rather than a live server. Unconfigured real servers report explicit unconfigured failure.
+   - **Status Probing:** DEMO is labeled as a local simulation. Configured TEST/PRODUCTION profiles use the verified native TLS status probe. The current native server advertises protocol version `2` through `WELCOME Helion/2`, but does not advertise software version or maintenance state; those fields remain unknown. Unconfigured real servers report explicit unconfigured failure.
    - **Simulation Boundary:** DEMO development-simulation controls follow the delegated active API. They remain available in DEMO but are unavailable through ordinary PRIVATE TEST/PRODUCTION companion paths.
 
 ## M1 acceptance
@@ -38,6 +39,26 @@ gradle testDebugUnitTest
 gradle assembleDebug
 git diff --check
 ```
+
+## Native status integration (M2)
+
+The current HELION native server contract has been verified against `bannaar/Helion` `main` at `3b7fd52bb1fd36d6933eff0bbff35a3138c22568`.
+
+Commander implements only the verified status/compatibility slice:
+
+```text
+TLS 1.2+
+    ↓
+certificate trust + hostname verification
+    ↓
+WELCOME Helion/2
+    ↓
+protocol-compatible status
+```
+
+It intentionally does not send the pre-auth `STATE` command because the greeting is sufficient for compatibility/status and `STATE` exposes profile/message counts.
+
+See `HELION_COMMANDER_NATIVE_STATUS_CONTRACT.md`.
 
 ## API discipline
 docs/COMPANION_API_CONTRACT.md is a proposal until each endpoint, authentication mechanism, DTO, and event is verified against the real server.
@@ -66,9 +87,9 @@ Future companion authorization should use scoped, revocable, expiring credential
 Player scopes never imply DEV_ADMIN, production operations, database, or security-admin access.
 
 ## Integration sequence
-1. Verify main HELION server capability.
-2. Define versioned DTOs/read models.
-3. Implement RealCompanionApi for verified operations only.
-4. Add integration tests.
-5. Add explicit connection/provenance state to UI.
+1. Server capability/status handshake — implemented for configured native TLS endpoints.
+2. Verify and design authentication against the native server.
+3. Define versioned commander/account read models.
+4. Implement `RealCompanionApi` operations only after each server capability is verified.
+5. Add integration tests and explicit provenance state.
 6. Only then enable production-target actions.
