@@ -2,7 +2,7 @@
 
 **Application:** HELION Commander  
 **Platform:** Android phones and tablets  
-**Current status:** Development prototype / pre-server-integration alpha
+**Current status:** Development prototype / incremental native-server integration alpha
 
 ---
 
@@ -24,9 +24,7 @@ The application includes interfaces for:
 - communications
 - settings and environment information
 
-The current development build uses **simulated HELION data**.
-
-It is not yet connected to the persistent HELION production server.
+The default DEMO environment uses **simulated HELION data**. Specially configured PRIVATE TEST or PRODUCTION builds can now verify a native HELION server and, after manual scoped-token pairing, read the authenticated native commander PROFILE. Other sections remain simulated or unavailable unless explicitly identified as live.
 
 ---
 
@@ -98,7 +96,7 @@ Depending on the current build, it may show:
 - UniNet headlines
 - environment/service information
 
-Current gameplay data is simulated.
+Dashboard/gameplay data remains simulated unless a field is explicitly sourced from the authenticated native PROFILE.
 
 ---
 
@@ -117,7 +115,7 @@ The Commander section displays character information such as:
 - endorsements
 - organization membership
 
-In a future connected build, this information will come from your HELION account.
+When a configured TEST/Production environment is paired with a valid `profile.read` token, the Commander screen can load the native server's verified username, display name, GSC/credits value, XP, and current ship identifier. Rich fields that native protocol v2 does not advertise are shown as unavailable rather than guessed.
 
 ---
 
@@ -338,8 +336,8 @@ PRODUCTION
 The environment badge identifies the active target.
 
 - **DEMO / OFFLINE** uses local simulated data.
-- **PRIVATE TEST** selects the isolated test namespace. Default builds have no endpoint configured; specially configured builds can perform the verified native TLS status probe.
-- **PRODUCTION** selects the persistent-universe target namespace. Default builds have no endpoint configured; specially configured builds can perform the verified native TLS status probe.
+- **PRIVATE TEST** selects the isolated test namespace. Default builds have no endpoint configured; configured builds can probe native TLS and use a TEST-issued scoped companion token for live PROFILE reads.
+- **PRODUCTION** selects the persistent-universe target namespace. Default builds have no endpoint configured; configured builds can probe native TLS and use a Production-issued scoped companion token for live PROFILE reads.
 
 Selecting PRIVATE TEST or PRODUCTION does not fabricate a connection. Their local caches, local planning state, and credential namespaces are isolated from each other and from DEMO. Switching into Production requires an explicit confirmation.
 
@@ -369,10 +367,10 @@ Server selection is implemented as part of the Multi-Environment Server Foundati
 Uses local simulated data and is clearly marked as a local simulation.
 
 ### PRIVATE TEST
-Uses a separate TEST database/cache and credential namespace. If no TEST host is configured, it reports NOT CONFIGURED rather than falling back to DEMO. If an endpoint is configured, Commander can verify the server through a trusted TLS connection and the HELION native protocol-v2 greeting.
+Uses a separate TEST database/cache and encrypted credential namespace. If no TEST host is configured, it reports NOT CONFIGURED rather than falling back to DEMO. If an endpoint is configured, Commander can verify the server through trusted TLS. Paste a token issued by that TEST server with `COMPANION ISSUE` to enable the live `PROFILE` read.
 
 ### PRODUCTION
-Uses a separate Production database/cache and credential namespace. If no Production host is configured, it reports NOT CONFIGURED rather than falling back to DEMO. If an endpoint is configured, Commander can perform the same TLS/protocol compatibility check.
+Uses a separate Production database/cache and encrypted credential namespace. If no Production host is configured, it reports NOT CONFIGURED rather than falling back to DEMO. If an endpoint is configured, Commander can perform the same TLS/protocol check. Only a token issued by the Production server should be paired with Production.
 
 When you change environments, environment-scoped in-memory data is cleared and persistent observers rebind to the selected namespace so DEMO data is not shown as TEST or Production data.
 
@@ -450,20 +448,15 @@ Commander cannot currently obtain the information.
 
 ## 22. Current Prototype Limitations
 
-The present development build can perform a verified native-server TLS/protocol status check when an endpoint is configured. It does not yet provide verified live:
+The present development build can perform a verified native-server TLS/protocol status check and scoped companion authentication when an endpoint is configured and paired. It can perform the verified native commander PROFILE read, including username/display name, server-reported GSC/credits value, XP, and ship identifier. It does not yet provide verified live:
 
-- HELION server authentication
-- Production account access
-- PRIVATE TEST account access
-- live commander profile
-- live GSC
-- live fleet state
-- live inventory
-- live market state
-- live missions
-- live Guild state
-- live discovery state
-- live UniNet service
+- owned fleet details
+- inventory
+- market state
+- missions
+- Guild state
+- discovery state
+- UniNet service
 
 These will be added incrementally.
 
@@ -474,11 +467,11 @@ These will be added incrementally.
 The intended integration sequence is:
 
 ```text
-Server connection/status [implemented for configured native TLS endpoints]
+Server connection/status [implemented]
         ↓
-Authentication
+Scoped companion authentication [implemented]
         ↓
-Commander profile
+Native commander PROFILE [implemented]
         ↓
 Owned fleet
         ↓
@@ -523,7 +516,9 @@ PRODUCTION = NOT CONFIGURED unless build supplies a native endpoint
 ## 25. Troubleshooting
 
 ### Production is selected but my real account is missing
-Environment selection and the status probe do not provide account login. Authentication and live commander/account reads are not implemented yet.
+Production must have a configured native endpoint and a Production-issued companion token. In the normal game client, authenticate with your player account and run `COMPANION ISSUE`. In Commander Settings, select Production, paste the returned `hc1...` token into Companion Credential Pairing, save it encrypted, and choose VERIFY PROFILE.
+
+Commander does not store your HELION game password.
 
 ### My ships or GSC do not match HELION
 The current build uses mock data.
@@ -571,7 +566,7 @@ HELION Commander is already a substantial Android companion prototype with:
 - UniNet
 - communications
 
-It defaults to DEMO simulated data. PRIVATE TEST and PRODUCTION selection/isolation are implemented, but verified real server connections are not configured yet.
+It defaults to DEMO simulated data. PRIVATE TEST and PRODUCTION selection/isolation are implemented. Configured and paired real environments can now perform verified native status and live PROFILE reads; the rest of the companion surfaces are still being integrated incrementally.
 
 The governing rule is:
 
