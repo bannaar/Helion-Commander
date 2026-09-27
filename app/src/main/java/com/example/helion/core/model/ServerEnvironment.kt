@@ -17,15 +17,15 @@ enum class ServerEnvironment(
     PRIVATE_TEST(
         id = "private_test",
         displayName = "PRIVATE TEST",
-        badgeLabel = "TEST // PRIVATE TEST",
-        description = "Isolated staging universe (LAB-SEC-7) for verified test deployments. Non-canonical sandbox.",
+        badgeLabel = "TEST // PRIVATE TEST UNIVERSE",
+        description = "Target profile for the isolated private test universe (LAB-SEC-7). This build remains NOT CONFIGURED until a verified server endpoint is connected.",
         defaultBaseUrl = null
     ),
     PRODUCTION(
         id = "production",
         displayName = "PRODUCTION",
-        badgeLabel = "LIVE // PERSISTENT",
-        description = "The single persistent HELION universe. Authoritative live player actions, GSC, and assets commit here.",
+        badgeLabel = "LIVE // PERSISTENT UNIVERSE",
+        description = "Target profile for the single persistent HELION universe. This build remains NOT CONFIGURED until a verified production endpoint is connected.",
         defaultBaseUrl = null
     );
 
