@@ -5,7 +5,7 @@
 **Language:** Kotlin  
 **UI:** Jetpack Compose  
 **Status:** Pre-server-integration alpha  
-**Current backend:** `FakeCompanionApi`  
+**Current backend routing:** `DEMO -> FakeCompanionApi`; `PRIVATE_TEST/PRODUCTION -> RealCompanionApi (NOT CONFIGURED)`  
 **Architecture:** HELION server-authoritative companion client
 
 ---
@@ -59,14 +59,15 @@ Current data flow:
 ```text
 HELION Commander
        ↓
-Repositories
+Environment selection
        ↓
-CompanionApi
-       ↓
-FakeCompanionApi
-       ↓
-Simulated HELION data
+CompanionApiFactory / DelegatingCompanionApi
+       ├── DEMO          -> FakeCompanionApi
+       ├── PRIVATE TEST  -> RealCompanionApi [NOT CONFIGURED]
+       └── PRODUCTION    -> RealCompanionApi [NOT CONFIGURED]
 ```
+
+Each environment has a separate Room database and credential namespace. Repository DAO access and long-lived Room observers must rebind when the selected environment changes, and environment-scoped in-memory state must be cleared before target-environment data is loaded.
 
 There is currently **no verified `RealCompanionApi` connection to a HELION PRIVATE TEST or PRODUCTION server**.
 
@@ -80,7 +81,7 @@ gradle assembleDebug
 git diff --check
 ```
 
-At the current checkpoint, the test suite and debug APK build pass on GitHub CI.
+Do not call a new checkpoint validated until its exact head commit has passed the unit-test and debug-build CI gates.
 
 ---
 
@@ -373,7 +374,7 @@ Room/local storage is suitable for:
 - UI preferences
 - local planning state
 
-Future TEST and PRODUCTION data must be isolated.
+DEMO, PRIVATE TEST, and PRODUCTION data are required to remain isolated at runtime.
 
 Target:
 
@@ -393,11 +394,11 @@ Never silently copy or fall back between environments.
 
 ---
 
-## 13. Next Milestone: Multi-Environment Server Foundation
+## 13. Current Milestone: Multi-Environment Server Foundation (M1)
 
-This is the recommended next Commander milestone.
+M1 is implemented in the current codebase and must remain green under its isolation acceptance tests.
 
-Target modes:
+Current modes:
 
 ```text
 DEMO / OFFLINE
@@ -405,30 +406,33 @@ PRIVATE TEST
 PRODUCTION
 ```
 
-Implement:
+Implemented foundation:
 
-- `ServerEnvironment`
-- `ServerProfile`
+- `ServerEnvironment` and `ServerProfile`
 - persistent environment selection
-- server selector UI
-- unmistakable TEST/LIVE indicators
+- server selector UI with unmistakable environment identity
 - Production switch confirmation
 - environment-specific credential namespaces
-- environment-specific cached/server state
-- `CompanionApiFactory`
+- separate Room databases per environment
+- runtime DAO rebinding when environments change
+- cancellation/rebinding of long-lived Room observers
+- clearing of environment-scoped in-memory state during a switch
+- `CompanionApiFactory` and `DelegatingCompanionApi`
 - `RealCompanionApi` skeleton
 - explicit server-not-configured state
 - server-status abstraction
 - cross-environment isolation tests
+- DEMO-only simulation powers that do not leak into TEST/PRODUCTION
 
 Until a verified real endpoint exists:
 
 ```text
-PRIVATE TEST -> NOT CONFIGURED
-PRODUCTION   -> NOT CONFIGURED
+DEMO          -> FakeCompanionApi
+PRIVATE TEST  -> RealCompanionApi [NOT CONFIGURED]
+PRODUCTION    -> RealCompanionApi [NOT CONFIGURED]
 ```
 
-Do not silently use `FakeCompanionApi` for those environments.
+Selecting TEST or PRODUCTION changes the target environment and isolated local namespace. It must not imply that a live server connection exists.
 
 ---
 
@@ -561,7 +565,11 @@ Server-environment work should prove:
 - Production switching requires confirmation
 - TEST and Production credentials are isolated
 - TEST and Production caches do not cross
+- repository reads/writes follow the newly selected environment after a runtime switch
+- long-lived Room observers rebind to the newly selected environment
+- DEMO authoritative-looking in-memory state is cleared before TEST/PRODUCTION refreshes
 - `RealCompanionApi` cannot expose development simulation powers
+- DEMO simulation controls remain available only while DEMO is the active delegated API
 
 Final validation:
 
