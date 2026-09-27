@@ -24,7 +24,7 @@ Develop HELION Commander as a non-authoritative companion application for HELION
 - FakeCompanionApi is DEMO/MOCK data, never proof of server implementation.
 - RealCompanionApi must not implement DevelopmentSimulationApi.
 - Do not expose hidden server truth to the client and then rely on UI hiding it.
-- Keep DEVELOPMENT, PRIVATE_TEST, and PRODUCTION state isolated.
+- Keep DEMO, PRIVATE_TEST, and PRODUCTION state isolated.
 - Keep secrets out of Git.
 - Preserve compatibility-sensitive internal identifiers until a deliberate migration is tested.
 
