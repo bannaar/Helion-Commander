@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 data class SettingsUiState(
     val currentEnvironment: HelionEnvironment = HelionEnvironment.DEVELOPMENT,
     val currentServerEnvironment: ServerEnvironment = ServerEnvironment.DEMO,
-    val serverProfile: ServerProfile = ServerProfile(ServerEnvironment.DEMO),
+    val serverProfile: ServerProfile = ServerProfile(ServerEnvironment.DEMO, isConfigured = true),
     val serverStatus: ServerStatus? = null,
     val serverStatusError: String? = null,
     val isCheckingStatus: Boolean = false,
