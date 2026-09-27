@@ -2,7 +2,7 @@
 
 Official companion application for **HELION**, the persistent, server-authoritative online science-fiction universe.
 
-> **DEVELOPMENT STATUS:** This repository is currently a mock-backed Android prototype. `FakeCompanionApi` supplies simulated data. No production, private-test, or development HELION server is connected yet. UI actions that appear authoritative are prototype simulations until a verified `RealCompanionApi` exists.
+> **DEVELOPMENT STATUS:** This repository is a pre-server-integration Android prototype. `DEMO / OFFLINE` uses `FakeCompanionApi`. `PRIVATE TEST` and `PRODUCTION` route to `RealCompanionApi` targets that are currently **NOT CONFIGURED**. They never fall back to DEMO data.
 
 ---
 
@@ -35,7 +35,7 @@ com.example.helion/
 ├── core/
 │   ├── HelionAppContainer.kt       # Dependency injection & service locator
 │   ├── model/                     # Pure domain models (Commander, Ship, Universe, Market, UniNet-compatible legacy models, Guild, Comms)
-│   ├── network/                   # CompanionApi contract and FakeCompanionApi
+│   ├── network/                   # CompanionApi, factory/delegation, Fake/Real API implementations
 │   ├── database/                  # Room Database, Entities, and Reactive DAOs
 │   ├── navigation/                # Deterministic Dijkstra/A* galaxy router
 │   └── repository/                # Repository layer abstracting local cache & server API
@@ -49,7 +49,7 @@ com.example.helion/
     ├── market/                    # Local markets, cross-system price arbitrage, buy/sell orders
     ├── galnet/                    # UniNet UI; legacy package name retained temporarily
     ├── guild/                     # Guild hub, member telemetry, sovereign territory, directives
-    ├── comms/                     # Secure direct comms, guild broadcast, local system channels
+    ├── comms/                     # Direct comms, guild broadcast, local system channels
     └── settings/                  # Environment switcher, offline mode simulation, cache management
 ```
 
@@ -68,7 +68,7 @@ com.example.helion/
    - Multi-ship persistent fleet management (separate instances: *Aster Raptor*, *Prototype Bulk Freighter*, *Commonwealth Valiant*).
    - Slot-level outfitting (Hardpoints, Utilities, Core Internals, Optional Internals) with real-time mass, power budget, and overload detection.
    - Save, load, and delete local fitting plans without altering physical ship fittings.
-   - "Request Server Refit" sends validation request to server checking station docking, slot sizes, and credit balance.
+   - The prototype exposes a refit-request flow; DEMO simulates validation. A real server refit is not implemented until the authoritative HELION server contract is verified.
 5. **Ship Livery & Appearance:**
    - Paint patterns (Tactical Cyan, Void Shadow, Directorate Prestige, Hazard Striping), registration markings, and weathering preview slider.
 6. **Universe Map & Graph Route Planner:**
@@ -80,7 +80,7 @@ com.example.helion/
    - Local station market stock, demand, buy/sell rates, and price trend indicators.
    - Cross-station price comparison table with calculated margins per ton and cargo profit estimates.
    - Trade profit simulator based on customizable cargo capacity.
-   - Authoritative Buy and Sell execution with server GSC validation, cargo hold space limits, and stock decrements.
+   - Buy/sell request UI with DEMO simulation. Real authoritative market execution is not yet connected.
 8. **UniNet News:**
    - Channels: Top Stories, Local, Economy, Security, Conflict, Exploration, Community.
    - Read/unread tracking and bookmarking for offline review.
@@ -88,11 +88,11 @@ com.example.helion/
    - Guild profile, online member rosters, eligible 0.0 Zero Space territory views with daily revenue tariffs.
    - Gated action controls: directives/notices can only be posted if the server returns `guild.notice.create` permission.
 10. **Universe Messenger:**
-    - Channels: Direct encrypted comms, Guild command, and System local broadcasts.
+    - Channels: Direct comms, Guild command, and System local broadcasts.
     - Compose and send messages through simulated server transport.
 11. **Environment Isolation & Offline Simulation:**
-    - Target profiles for `PRODUCTION`, `PRIVATE_TEST`, and `DEVELOPMENT`; current prototype data remains local/mock.
-    - Simulated offline mode with graceful degradation: cached browsing remains functional, but sensitive economic and outfitting orders are safely blocked.
+    - Runtime selector for `DEMO / OFFLINE`, `PRIVATE TEST`, and `PRODUCTION`, with separate cache/database and credential namespaces.
+    - `PRIVATE TEST` and `PRODUCTION` are explicitly NOT CONFIGURED until verified endpoints exist and never silently use DEMO data.
 
 ---
 
