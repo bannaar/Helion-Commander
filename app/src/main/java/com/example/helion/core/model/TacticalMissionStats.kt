@@ -3,7 +3,7 @@ package com.example.helion.core.model
 enum class MissionChartMode(val label: String) {
     TOTAL("Total Completed"),
     BY_CATEGORY("By Category"),
-    CREDITS_EARNED("Bounty Credits")
+    CREDITS_EARNED("GSC Earned")
 }
 
 data class WeeklyMissionRecord(

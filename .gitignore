@@ -16,3 +16,11 @@
 local.properties
 .env
 debug.keystore
+
+# Signing credentials and local secrets
+*.jks
+*.keystore
+my-upload-key.jks
+.env.*
+!.env.example
+google-services.json

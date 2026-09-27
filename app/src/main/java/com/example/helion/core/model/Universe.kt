@@ -3,14 +3,14 @@ package com.example.helion.core.model
 enum class SecurityClass(val label: String, val minRating: Float, val maxRating: Float) {
     HIGH_SECURITY("HIGH SEC", 0.2f, 5.0f),
     LOW_SECURITY("LOW SEC", -5.0f, -0.2f),
-    NULL_SECURITY("NULL SEC", 0.0f, 0.0f);
+    NULL_SECURITY("ZERO SPACE", 0.0f, 0.0f);
 
     companion object {
         fun fromRating(rating: Float): SecurityClass {
             return when {
                 rating >= 0.2f -> HIGH_SECURITY
                 rating <= -0.2f -> LOW_SECURITY
-                else -> NULL_SECURITY // exactly 0.0 or near boundary is treated as null sec
+                else -> NULL_SECURITY // legacy identifier; player-facing term for 0.0 is Zero Space
             }
         }
     }
@@ -21,7 +21,7 @@ enum class ThreatLevel(val label: String, val level: Int, val description: Strin
     LOW("Threat Level II - Guarded", 2, "Station defense grid active, minor pirate interception risks"),
     MODERATE("Threat Level III - Contested", 3, "Buffer border system, frequent raider reconnaissance"),
     HIGH("Threat Level IV - Hostile", 4, "Unpatrolled low-sec rim, organized pirate ambushes"),
-    EXTREME("Threat Level V - Lethal", 5, "Lawless 0.0 sovereign expanse, fleet warfare & drone swarms");
+    EXTREME("Threat Level V - Lethal", 5, "Lawless 0.0 Zero Space, fleet warfare & drone swarms");
 
     companion object {
         fun fromRating(rating: Float): ThreatLevel {
@@ -55,7 +55,7 @@ enum class SovereigntyType(val label: String) {
     UNCLAIMED("Unclaimed Space"),
     PLAYER_GUILD("Guild Territory"),
     PLAYER_ALLIANCE("Alliance Territory"),
-    NPC_NULLSEC_ENTITY("Null-Sec Syndicate")
+    NPC_NULLSEC_ENTITY("Zero Space Entity")
 }
 
 enum class StarLaneType(val label: String, val speedMultiplier: Float) {
@@ -141,9 +141,9 @@ data class SystemNode(
 enum class RouteOptimizationMode(val label: String, val description: String) {
     FASTEST("Fastest Route", "Fewest Gate jumps across the starlane network"),
     SAFEST("Safest Route", "Prioritizes high-security and heavily patrolled systems"),
-    HIGH_SEC_ONLY("High Sec Only", "Strictly avoids low-sec and null-sec sectors"),
+    HIGH_SEC_ONLY("High Sec Only", "Strictly avoids Low Security and Zero Space systems"),
     AVOID_LOW_SEC("Avoid Low-Sec", "Reroutes around pirate and unpatrolled faction low-sec"),
-    AVOID_NULLSEC("Avoid Null-Sec", "Avoids all lawless 0.0 sovereign null-sec territories"),
+    AVOID_NULLSEC("Avoid Zero Space", "Avoids all 0.0 Zero Space systems"),
     TRADE_ROUTE("Trade Corridor", "Favors inter-faction trunk lanes and commerce hubs")
 }
 

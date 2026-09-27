@@ -128,7 +128,7 @@ object GalaxyRouter {
             if (toNode.securityClass == SecurityClass.LOW_SECURITY) {
                 warnings.add("Caution: Gate entry into low-sec space [${toNode.name} (${String.format("%.1f", toNode.securityRating)})].")
             } else if (toNode.securityClass == SecurityClass.NULL_SECURITY) {
-                warnings.add("DANGER: 0.0 Null-Sec sector [${toNode.name}]. No naval defense or gate gun protection.")
+                warnings.add("DANGER: 0.0 Zero Space system [${toNode.name}]. No dependable national security response is assumed.")
             }
         }
 
@@ -168,7 +168,7 @@ object GalaxyRouter {
                 baseCost / conn.laneType.speedMultiplier
             }
             RouteOptimizationMode.SAFEST -> {
-                // High security systems receive huge weight discounts; low-sec and null-sec are penalized
+                // High security systems receive huge weight discounts; Low Security and Zero Space are penalized
                 when (to.securityClass) {
                     SecurityClass.HIGH_SECURITY -> baseCost * 0.7f
                     SecurityClass.LOW_SECURITY -> baseCost * 4.0f
