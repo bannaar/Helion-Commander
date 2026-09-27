@@ -81,7 +81,6 @@ class SettingsViewModel(val container: HelionAppContainer) : ViewModel() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(pendingProductionSwitch = false)
             container.setActiveServerEnvironment(env)
-            container.settingsRepository.switchServerEnvironment(env)
 
             // Safely refresh repositories for the newly active environment
             try {
