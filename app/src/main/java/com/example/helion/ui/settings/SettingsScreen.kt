@@ -25,6 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -37,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.helion.core.model.HelionEnvironment
@@ -295,7 +297,112 @@ fun SettingsScreen(
             }
         }
 
-        // 2. OFFLINE SIMULATION TOGGLE
+        // 3. COMPANION CREDENTIAL PAIRING
+        item {
+            HelionCard(
+                title = "Companion Credential Pairing",
+                badgeText = when {
+                    state.currentServerEnvironment == ServerEnvironment.DEMO -> "NOT REQUIRED"
+                    state.companionCredentialConfigured -> "TOKEN STORED"
+                    else -> "NOT PAIRED"
+                },
+                badgeColor = when {
+                    state.currentServerEnvironment == ServerEnvironment.DEMO -> HelionCyan
+                    state.companionCredentialConfigured -> HelionHighSecGreen
+                    else -> HelionAmber
+                },
+                accentColor = if (state.companionCredentialConfigured) HelionHighSecGreen else HelionAmber
+            ) {
+                if (state.currentServerEnvironment == ServerEnvironment.DEMO) {
+                    Text(
+                        text = "DEMO / OFFLINE uses local simulation and never stores authoritative server credentials.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = HelionTextSecondary
+                    )
+                } else {
+                    Text(
+                        text = "Pair this environment with a scoped HELION companion token. Commander stores the bearer encrypted with Android Keystore and never stores your game password.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = HelionTextSecondary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Issue from a normal native player session with: COMPANION ISSUE",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = HelionTextMuted
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = state.companionTokenDraft,
+                        onValueChange = { viewModel.updateCompanionTokenDraft(it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("companion_token_input"),
+                        enabled = !state.isVerifyingCredential,
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        label = { Text("hc1 companion bearer token") },
+                        supportingText = {
+                            Text(
+                                if (state.companionCredentialConfigured) {
+                                    "A token is already stored for ${state.currentServerEnvironment.displayName}. Enter a new token only to replace it."
+                                } else {
+                                    "Token must come from the currently selected HELION server environment."
+                                }
+                            )
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { viewModel.saveCompanionCredential() },
+                            enabled = state.companionTokenDraft.isNotBlank() && !state.isVerifyingCredential,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = HelionCyan,
+                                contentColor = HelionDeepGraphite
+                            )
+                        ) {
+                            Text("SAVE ENCRYPTED", fontWeight = FontWeight.Bold)
+                        }
+                        OutlinedButton(
+                            onClick = { viewModel.verifyCompanionCredential() },
+                            enabled = state.companionCredentialConfigured && !state.isVerifyingCredential,
+                            border = BorderStroke(1.dp, HelionHighSecGreen)
+                        ) {
+                            Text(
+                                if (state.isVerifyingCredential) "VERIFYING..." else "VERIFY PROFILE",
+                                color = HelionHighSecGreen
+                            )
+                        }
+                        if (state.companionCredentialConfigured) {
+                            TextButton(
+                                onClick = { viewModel.clearCompanionCredential() },
+                                enabled = !state.isVerifyingCredential
+                            ) {
+                                Text("CLEAR", color = HelionAmber)
+                            }
+                        }
+                    }
+                    if (state.credentialMessage != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = state.credentialMessage ?: "",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (state.credentialMessage?.startsWith("Verified") == true) {
+                                HelionHighSecGreen
+                            } else {
+                                HelionTextSecondary
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        // 4. OFFLINE SIMULATION TOGGLE
         item {
             HelionCard(
                 title = "Client Connectivity & Offline Mode",
@@ -323,7 +430,7 @@ fun SettingsScreen(
             }
         }
 
-        // 3. NOTIFICATION SETTINGS
+        // 5. NOTIFICATION SETTINGS
         item {
             HelionCard(title = "Sub-Space Notification Frequencies", accentColor = HelionCyan) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -355,7 +462,7 @@ fun SettingsScreen(
             }
         }
 
-        // 4. CACHE & PERSISTENCE
+        // 6. CACHE & PERSISTENCE
         item {
             HelionCard(title = "Local Cache Management", accentColor = HelionBorder) {
                 Text(
@@ -377,7 +484,7 @@ fun SettingsScreen(
             }
         }
 
-        // 5. DIAGNOSTICS & ABOUT
+        // 7. DIAGNOSTICS & ABOUT
         item {
             HelionCard(title = "System Architecture & Authority", accentColor = HelionCyan) {
                 Text(
@@ -405,7 +512,7 @@ fun SettingsScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Prototype companion client. DEMO uses mock data. Native TLS status probing is implemented for configured TEST/PRODUCTION endpoints; gameplay APIs remain unimplemented until individually verified.",
+                    text = "Prototype companion client. DEMO uses mock data. Configured TEST/PRODUCTION endpoints support verified native TLS status plus scoped companion authentication and live PROFILE reads; other gameplay APIs remain unimplemented until individually verified.",
                     style = MaterialTheme.typography.labelSmall,
                     color = HelionTextMuted
                 )
