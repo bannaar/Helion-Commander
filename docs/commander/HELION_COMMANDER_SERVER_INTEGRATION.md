@@ -7,7 +7,7 @@ The persistent HELION server is authoritative. Commander is an untrusted client.
 This repository supports multi-environment server profiles via `ServerEnvironment` (`DEMO`, `PRIVATE_TEST`, `PRODUCTION`).
 - `DEMO` routes to `FakeCompanionApi` for local mock and offline development.
 - `PRIVATE_TEST` and `PRODUCTION` route to `RealCompanionApi`. When unconfigured, they fail honestly with `ServerNotConfiguredException` and do not fall back to mock data.
-- The first real-server operation is now implemented as a raw native TLS compatibility/status probe. It verifies the authoritative server's `WELCOME Helion/2` greeting and does not invent REST or WebSocket behavior.
+- Verified real-server operations now include the raw native TLS status/protocol probe and scoped companion authentication for live `PROFILE` reads. Commander does not invent REST or WebSocket behavior.
 
 ## Multi-Environment Foundation (M1)
 1. **Environment Profiles:**
@@ -19,7 +19,7 @@ This repository supports multi-environment server profiles via `ServerEnvironmen
    - `DelegatingCompanionApi` dynamically delegates to the active environment's API.
    - `RealCompanionApi` implements `CompanionApi` for real server connectivity. Crucial Invariant: `RealCompanionApi` MUST NOT implement `DevelopmentSimulationApi`.
 3. **Environment Isolation Invariants:**
-   - **Credential Isolation:** `AuthCredentialStore` partitions bearer tokens strictly by environment namespace (`token_demo`, `token_private_test`, `token_production`). Tokens never crossover between test and production.
+   - **Credential Isolation:** `AuthCredentialStore` partitions companion bearer tokens strictly by environment namespace. Authoritative tokens are never stored for DEMO. TEST/Production tokens are AES-GCM encrypted with an AndroidKeyStore-held key and cryptographically bound to their environment as AAD.
    - **Database Cache Isolation:** `AppDatabase` maintains independent physical SQLite database files per environment (`helion_commander_demo.db`, `helion_commander_test.db`, `helion_commander_production.db`). Repository DAO providers resolve against the active environment at use time.
    - **Observer Isolation:** Long-lived Room observers cancel and re-subscribe when the selected environment changes, preventing a screen from remaining attached to a previous environment's DAO.
    - **In-Memory Isolation:** Commander, fleet, universe, market, UniNet, Guild, comms, and mission repository state is cleared on an environment transition before target-environment refreshes occur.
@@ -60,6 +60,24 @@ It intentionally does not send the pre-auth `STATE` command because the greeting
 
 See `HELION_COMMANDER_NATIVE_STATUS_CONTRACT.md`.
 
+## Scoped companion authentication and PROFILE reads (M3)
+
+Verified against `bannaar/Helion` `main` at `23cf90b0b7bdd0996c513f610fab21dc9a4af2e0`.
+
+The server supports a dedicated 30-day, revocable `profile.read` bearer credential. It is issued from a normal password-authenticated HELION session with `COMPANION ISSUE`; Commander stores only the bearer token and never stores the game password.
+
+Commander authenticates over the existing native TLS v2 connection:
+
+```text
+COMPANION AUTH <token>
+PROFILE
+QUIT
+```
+
+The current PROFILE record provides username, display name, faction identifier, ship identifier, credits, experience, hull/upgrade fields, and mission state. Commander maps only fields supported by its present read model and marks unsupported rich-profile fields `NOT ADVERTISED`.
+
+Manual pairing is available in Settings for development builds. See `HELION_COMMANDER_COMPANION_AUTH_CONTRACT.md`.
+
 ## API discipline
 docs/COMPANION_API_CONTRACT.md is a proposal until each endpoint, authentication mechanism, DTO, and event is verified against the real server.
 
@@ -83,13 +101,13 @@ Routing uses only topology available to the caller.
 Domain, security, sovereignty, structure ownership, and discovery state remain separate.
 
 ## Authorization
-Future companion authorization should use scoped, revocable, expiring credentials rather than raw game passwords.
+Companion authorization uses scoped, revocable, expiring credentials rather than raw game passwords for the verified native PROFILE slice.
 Player scopes never imply DEV_ADMIN, production operations, database, or security-admin access.
 
 ## Integration sequence
-1. Server capability/status handshake — implemented for configured native TLS endpoints.
-2. Verify and design authentication against the native server.
-3. Define versioned commander/account read models.
-4. Implement `RealCompanionApi` operations only after each server capability is verified.
-5. Add integration tests and explicit provenance state.
-6. Only then enable production-target actions.
+1. Server capability/status handshake — implemented.
+2. Scoped companion authentication — implemented for `profile.read`.
+3. Native commander PROFILE read — implemented with conservative field mapping.
+4. Verify and implement owned-fleet reads.
+5. Continue with permission-filtered universe/UniNet/market/mission surfaces one capability at a time.
+6. Only enable mutations after the exact server operation and authorization scope are verified.
