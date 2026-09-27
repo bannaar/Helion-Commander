@@ -8,6 +8,7 @@ import com.example.helion.core.model.SavedLoadoutPlan
 import com.example.helion.core.model.ShipDefinition
 import com.example.helion.core.network.CompanionApi
 import com.example.helion.core.network.DevelopmentSimulationApi
+import com.example.helion.core.network.DelegatingCompanionApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +19,12 @@ import java.util.UUID
 
 class FleetRepository(
     private val api: CompanionApi,
-    private val loadoutPlanDao: LoadoutPlanDao
+    private val loadoutPlanDaoProvider: () -> LoadoutPlanDao
 ) {
+    constructor(api: CompanionApi, loadoutPlanDao: LoadoutPlanDao) : this(api, { loadoutPlanDao })
+
+    private val loadoutPlanDao: LoadoutPlanDao
+        get() = loadoutPlanDaoProvider()
     private val _ownedShips = MutableStateFlow<List<OwnedShipInstance>>(emptyList())
     val ownedShips: StateFlow<List<OwnedShipInstance>> = _ownedShips.asStateFlow()
 
@@ -61,7 +66,7 @@ class FleetRepository(
     }
 
     suspend fun simulateShipWear(shipInstanceId: String, hullDamage: Float, wearIncrease: Float): Result<OwnedShipInstance> {
-        val simulationApi = api as? DevelopmentSimulationApi
+        val simulationApi = developmentSimulationApi()
             ?: return Result.failure(UnsupportedOperationException("Ship-wear mutation is available only in development simulation."))
         val res = simulationApi.simulateShipWear(shipInstanceId, hullDamage, wearIncrease)
         res.onSuccess { refreshFleet() }
@@ -112,5 +117,15 @@ class FleetRepository(
 
     suspend fun deletePlan(planId: String) {
         loadoutPlanDao.deletePlanById(planId)
+    }
+
+    fun clearEnvironmentState() {
+        _ownedShips.value = emptyList()
+    }
+
+    private fun developmentSimulationApi(): DevelopmentSimulationApi? = when (api) {
+        is DevelopmentSimulationApi -> api
+        is DelegatingCompanionApi -> api.currentApi as? DevelopmentSimulationApi
+        else -> null
     }
 }
