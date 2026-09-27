@@ -16,7 +16,7 @@ enum class HelionEnvironment(
     ),
     PRIVATE_TEST(
         displayName = "TEST (LAB-SEC-7)",
-        serverEndpoint = "NOT_CONNECTED",
+        serverEndpoint = "BUILD_CONFIGURED_NATIVE_TLS",
         isAuthoritativeProd = false,
         description = "Private-test target profile. Configured builds support verified native TLS status and scoped companion PROFILE reads without DEMO fallback.",
         serverEnv = ServerEnvironment.PRIVATE_TEST
