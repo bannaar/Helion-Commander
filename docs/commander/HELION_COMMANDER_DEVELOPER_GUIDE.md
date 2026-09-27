@@ -5,7 +5,7 @@
 **Language:** Kotlin  
 **UI:** Jetpack Compose  
 **Status:** Pre-server-integration alpha  
-**Current backend routing:** `DEMO -> FakeCompanionApi`; `PRIVATE_TEST/PRODUCTION -> RealCompanionApi (NOT CONFIGURED)`
+**Current backend routing:** `DEMO -> FakeCompanionApi`; `PRIVATE_TEST/PRODUCTION -> RealCompanionApi` with optional verified native TLS status endpoints
 **Architecture:** HELION server-authoritative companion client
 
 ---
@@ -63,13 +63,13 @@ Environment selection
        ↓
 CompanionApiFactory / DelegatingCompanionApi
        ├── DEMO          -> FakeCompanionApi
-       ├── PRIVATE TEST  -> RealCompanionApi [NOT CONFIGURED]
-       └── PRODUCTION    -> RealCompanionApi [NOT CONFIGURED]
+       ├── PRIVATE TEST  -> RealCompanionApi [native TLS status if configured]
+       └── PRODUCTION    -> RealCompanionApi [native TLS status if configured]
 ```
 
 Each environment has a separate Room database and credential namespace. Repository DAO access and long-lived Room observers must rebind when the selected environment changes, and environment-scoped in-memory state must be cleared before target-environment data is loaded.
 
-There is currently **no verified `RealCompanionApi` connection to a HELION PRIVATE TEST or PRODUCTION server**.
+The native server status/compatibility transport is implemented and verified against HELION protocol v2. A default build still has no TEST or Production host configured, and no authenticated gameplay API is implemented yet.
 
 Do not present mock data as live server data.
 
@@ -255,6 +255,8 @@ It must never imply a successful connection to TEST or PRODUCTION.
 
 `RealCompanionApi` must **not** implement `DevelopmentSimulationApi`.
 
+The verified first real transport is raw TLS, not HTTP. `TlsNativeServerStatusProbe` accepts only TLS 1.2+ and a compatible `WELCOME Helion/2` greeting. See `HELION_COMMANDER_NATIVE_STATUS_CONTRACT.md`.
+
 Developer simulation controls belong only to local/mock or explicitly authorized private-test infrastructure.
 
 ---
@@ -424,24 +426,23 @@ Implemented foundation:
 - cross-environment isolation tests
 - DEMO-only simulation powers that do not leak into TEST/PRODUCTION
 
-Until a verified real endpoint exists:
+Endpoint hosts remain external build configuration:
 
 ```text
-DEMO          -> FakeCompanionApi
-PRIVATE TEST  -> RealCompanionApi [NOT CONFIGURED]
-PRODUCTION    -> RealCompanionApi [NOT CONFIGURED]
+HELION_PRIVATE_TEST_HOST / HELION_PRIVATE_TEST_PORT
+HELION_PRODUCTION_HOST   / HELION_PRODUCTION_PORT
 ```
 
-Selecting TEST or PRODUCTION changes the target environment and isolated local namespace. It must not imply that a live server connection exists.
+With no host configured, TEST/PRODUCTION remain `NOT CONFIGURED`. With a host configured, Commander may perform only the verified native TLS status probe. Selecting an environment never implies successful connectivity.
 
 ---
 
-## 14. First Real Server Integration
+## 14. Real Server Integration Sequence
 
-After server selection exists, integrate in this order:
+The first step, native server status/compatibility probing, is implemented. Continue in this order:
 
 ```text
-SERVER STATUS
+SERVER STATUS [IMPLEMENTED]
       ↓
 AUTHENTICATION
       ↓
