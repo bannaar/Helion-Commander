@@ -338,8 +338,8 @@ PRODUCTION
 The environment badge identifies the active target.
 
 - **DEMO / OFFLINE** uses local simulated data.
-- **PRIVATE TEST** selects the isolated test namespace but is currently **NOT CONNECTED**.
-- **PRODUCTION** selects the persistent-universe target namespace but is currently **NOT CONNECTED**.
+- **PRIVATE TEST** selects the isolated test namespace. Default builds have no endpoint configured; specially configured builds can perform the verified native TLS status probe.
+- **PRODUCTION** selects the persistent-universe target namespace. Default builds have no endpoint configured; specially configured builds can perform the verified native TLS status probe.
 
 Selecting PRIVATE TEST or PRODUCTION does not fabricate a connection. Their local caches, local planning state, and credential namespaces are isolated from each other and from DEMO. Switching into Production requires an explicit confirmation.
 
@@ -369,10 +369,10 @@ Server selection is implemented as part of the Multi-Environment Server Foundati
 Uses local simulated data and is clearly marked as a local simulation.
 
 ### PRIVATE TEST
-Uses a separate TEST database/cache and credential namespace. The real TEST companion endpoint is not configured yet, so live TEST requests report unavailable/not configured rather than falling back to DEMO.
+Uses a separate TEST database/cache and credential namespace. If no TEST host is configured, it reports NOT CONFIGURED rather than falling back to DEMO. If an endpoint is configured, Commander can verify the server through a trusted TLS connection and the HELION native protocol-v2 greeting.
 
 ### PRODUCTION
-Uses a separate Production database/cache and credential namespace. The real Production companion endpoint is not configured yet, so live Production requests report unavailable/not configured rather than falling back to DEMO.
+Uses a separate Production database/cache and credential namespace. If no Production host is configured, it reports NOT CONFIGURED rather than falling back to DEMO. If an endpoint is configured, Commander can perform the same TLS/protocol compatibility check.
 
 When you change environments, environment-scoped in-memory data is cleared and persistent observers rebind to the selected namespace so DEMO data is not shown as TEST or Production data.
 
@@ -450,7 +450,7 @@ Commander cannot currently obtain the information.
 
 ## 22. Current Prototype Limitations
 
-The present development build does not yet provide verified live:
+The present development build can perform a verified native-server TLS/protocol status check when an endpoint is configured. It does not yet provide verified live:
 
 - HELION server authentication
 - Production account access
@@ -474,7 +474,7 @@ These will be added incrementally.
 The intended integration sequence is:
 
 ```text
-Server connection/status
+Server connection/status [implemented for configured native TLS endpoints]
         ↓
 Authentication
         ↓
@@ -514,8 +514,8 @@ Remember:
 
 ```text
 DEFAULT MODE = DEMO / MOCK DATA
-PRIVATE TEST = NOT CONNECTED
-PRODUCTION = NOT CONNECTED
+PRIVATE TEST = NOT CONFIGURED unless build supplies a native endpoint
+PRODUCTION = NOT CONFIGURED unless build supplies a native endpoint
 ```
 
 ---
@@ -523,7 +523,7 @@ PRODUCTION = NOT CONNECTED
 ## 25. Troubleshooting
 
 ### Production is selected but my real account is missing
-The current prototype is not connected to the Production server.
+Environment selection and the status probe do not provide account login. Authentication and live commander/account reads are not implemented yet.
 
 ### My ships or GSC do not match HELION
 The current build uses mock data.
