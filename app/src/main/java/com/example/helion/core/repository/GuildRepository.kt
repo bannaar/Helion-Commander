@@ -23,4 +23,8 @@ class GuildRepository(
         res.onSuccess { refreshGuild() }
         return res
     }
+
+    fun clearEnvironmentState() {
+        _guildState.value = null
+    }
 }
