@@ -86,7 +86,7 @@ fun SettingsScreen(
                 accentColor = HelionAmber
             ) {
                 Text(
-                    text = "Select authoritative cluster to connect. Note: Private test environments use artificial 100-credit baselines which NEVER apply to live Production.",
+                    text = "Select the target environment profile. This prototype currently uses local mock data and is not connected to a HELION server.",
                     style = MaterialTheme.typography.bodySmall,
                     color = HelionTextSecondary
                 )
@@ -140,7 +140,7 @@ fun SettingsScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(text = "Simulate Offline Mode", style = MaterialTheme.typography.titleMedium, color = HelionTextPrimary, fontWeight = FontWeight.Bold)
                         Text(
-                            text = "When offline, you can browse cached ships, routes, and GalNet news. Authoritative actions (Market BUY/SELL, Refitting) are disabled to prevent stale commits.",
+                            text = "When offline, you can browse cached ships, routes, and UniNet news. Authoritative actions are disabled to prevent stale commits.",
                             style = MaterialTheme.typography.bodySmall,
                             color = HelionTextSecondary
                         )
@@ -177,7 +177,7 @@ fun SettingsScreen(
                         onChecked = { viewModel.toggleMarket(it) }
                     )
                     NotificationToggleRow(
-                        title = "GalNet Flash Wire Bulletins",
+                        title = "UniNet Flash Bulletins",
                         subtitle = "Critical frontier conflicts and system security alerts",
                         checked = state.notifyGalNetFlash,
                         onChecked = { viewModel.toggleGalNet(it) }
@@ -219,7 +219,7 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "• The Android client may REQUEST actions.\n• The HELION Universe Server VALIDATES and COMMITS them.\n• Client never declares authoritative state (credits, ships, stock, standings).\n• Route plans and fitting plans are local hypothetical workspaces.",
+                    text = "• The Android client may REQUEST actions.\n• The HELION Universe Server VALIDATES and COMMITS them.\n• Client never declares authoritative state (GSC, ships, stock, standings).\n• Route plans and fitting plans are local hypothetical workspaces.",
                     style = MaterialTheme.typography.bodySmall,
                     color = HelionTextSecondary,
                     lineHeight = 18.sp
@@ -236,7 +236,7 @@ fun SettingsScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Official companion for the persistent server-authoritative universe.",
+                    text = "Prototype companion client. Current builds use mock data until a verified HELION server adapter is connected.",
                     style = MaterialTheme.typography.labelSmall,
                     color = HelionTextMuted
                 )

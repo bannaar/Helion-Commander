@@ -83,7 +83,7 @@ enum class HelionDestination(val route: String, val title: String, val icon: Ima
     MARKETS("markets", "Markets", Icons.Default.ShoppingCart),
     COMMUNICATIONS("communications", "Communications", Icons.Default.Email),
     COMMANDER("commander", "Commander", Icons.Default.Person),
-    GALNET("galnet", "GalNet", Icons.Default.Newspaper),
+    GALNET("galnet", "UniNet", Icons.Default.Newspaper),
     GUILD("guild", "Guild", Icons.Default.Group),
     SETTINGS("settings", "Settings", Icons.Default.Settings)
 }

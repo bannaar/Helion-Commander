@@ -1,18 +1,20 @@
 # HELION Companion API Contract Specification
 
-**Document Version:** 1.0.0-PROPOSED  
+**Document Version:** 1.0.1-PROPOSED  
 **Target Backend:** HELION Persistent Universe Server  
-**Transport Protocol:** HTTPS / TLS 1.3 + WebSocket (real-time telemetry)  
-**Encoding:** JSON / Protobuf  
-**Authentication:** Bearer Token via OAuth 2.0 / Mutual TLS Handshake
+**Transport Protocol:** PROPOSED ONLY — verify against the actual HELION server before implementation  
+**Encoding:** PROPOSED ONLY — not yet an implementation fact  
+**Authentication:** PROPOSED ONLY — use scoped, revocable credentials when the server contract is defined
 
 ---
+
+> **STATUS WARNING:** Every endpoint, transport, authentication mechanism, and event in this document is a design proposal until verified against the main HELION server repository and runtime. This file must not be used as evidence that an endpoint exists. See `docs/commander/HELION_COMMANDER_API_RECONCILIATION.md`.
 
 ## 1. Core Architectural Principle
 
 All endpoints must be strictly **authoritative**.  
-The Android companion application is an untrusted client that submits signed mutation requests.  
-The HELION server validates permissions, spatial proximity, station docking state, commodity inventory, and credit balances prior to committing any state transition.
+The Android companion application is an untrusted client. Any mutation capability must be explicitly supported and validated by the authoritative HELION server.  
+The HELION server validates permissions, spatial proximity, station docking state, commodity inventory, and GSC balances prior to committing any state transition.
 
 ---
 
@@ -25,7 +27,7 @@ The HELION server validates permissions, spatial proximity, station docking stat
 
 ### 2.2 Commander Telemetry
 - `GET /v1/commander/profile`
-  - Returns: `CommanderProfileDTO` (commanderId, callSign, credits, rank, xp, factionStandings, licenses, currentSystemId, currentStationId, activeShipId)
+  - Returns: `CommanderProfileDTO` (commanderId, callSign, GSC, rank, xp, factionStandings, licenses, currentSystemId, currentStationId, activeShipId)
 
 ### 2.3 Fleet & Outfitting
 - `GET /v1/fleet/ships`
@@ -35,8 +37,8 @@ The HELION server validates permissions, spatial proximity, station docking stat
   - Returns: `OwnedShipInstanceDTO`
 - `POST /v1/fleet/ships/{instanceId}/refit`
   - Body: `{ "plannedModules": { "slotId": "moduleId" } }`
-  - Validates: Commander docked at outfitting gantry, credit balance >= total module cost, slot sizing compliance.
-  - Returns: Authoritative updated `OwnedShipInstanceDTO` and new credit balance.
+  - Validates: Commander docked at outfitting gantry, GSC balance >= total module cost, slot sizing compliance.
+  - Returns: Authoritative updated `OwnedShipInstanceDTO` and new GSC balance.
 - `POST /v1/fleet/ships/{instanceId}/livery`
   - Body: `{ "liveryId": "liv-tactical-cyan" }`
   - Returns: `OwnedShipInstanceDTO`
@@ -53,9 +55,9 @@ The HELION server validates permissions, spatial proximity, station docking stat
   - Validates: Spatial location (docked), market stock >= requested, commander balance >= total cost, cargo capacity >= requested.
   - Returns: `MarketTransactionResultDTO` (`transactionId`, `authoritativeCredits`, `authoritativeCargoUnits`, `committedPrice`)
 
-### 2.6 GalNet News Wire
-- `GET /v1/galnet/articles?channel={category}`
-  - Returns: `List<GalNetArticleDTO>`
+### 2.6 UniNet News
+- `GET /v1/uninet/articles?channel={category}` (candidate future route; legacy internal names may remain until migrated)
+  - Returns: `List<UniNetArticleDTO>`
 
 ### 2.7 Guild & Alliance Territory
 - `GET /v1/guilds/me`
@@ -82,4 +84,4 @@ Supported event types:
 - `TELEMETRY_LOCATION_CHANGED`: Player warped or jumped in the main game.
 - `MARKET_PRICE_UPDATED`: Volatile price change on watched commodities.
 - `COMMS_MESSAGE_RECEIVED`: Real-time incoming direct or guild message.
-- `GALNET_FLASH_BULLETIN`: Breaking sector alert.
+- `UNINET_FLASH_BULLETIN`: Breaking sector alert.

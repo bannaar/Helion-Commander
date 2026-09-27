@@ -33,7 +33,6 @@ interface CompanionApi {
     suspend fun applyLoadout(shipInstanceId: String, plannedModules: Map<String, String>): Result<OwnedShipInstance>
     suspend fun requestLiveryUpdate(shipInstanceId: String, liveryId: String): Result<OwnedShipInstance>
     suspend fun performShipMaintenance(shipInstanceId: String): Result<OwnedShipInstance>
-    suspend fun simulateShipWear(shipInstanceId: String, hullDamage: Float, wearIncrease: Float): Result<OwnedShipInstance>
 
     // Universe & Navigation
     suspend fun getGalaxySystems(): Result<Map<String, SystemNode>>
@@ -43,7 +42,6 @@ interface CompanionApi {
     suspend fun getMarketItems(stationId: String? = null): Result<List<MarketItem>>
     suspend fun getAllRegionalMarkets(): Result<List<MarketItem>>
     suspend fun executeMarketTransaction(request: MarketTransactionRequest): Result<MarketTransactionResult>
-    suspend fun updateCommodityPrice(commodityId: String, newBuyPrice: Long, newSellPrice: Long, stationId: String? = null): Result<MarketItem>
 
     // GalNet
     suspend fun getGalNetArticles(): Result<List<GalNetArticle>>
@@ -66,4 +64,26 @@ interface CompanionApi {
     suspend fun claimMissionReward(missionId: String): Result<com.example.helion.core.model.TacticalMission>
     suspend fun setMissionPriority(missionId: String, isPriority: Boolean): Result<com.example.helion.core.model.TacticalMission>
     suspend fun abandonMission(missionId: String): Result<Unit>
+}
+
+
+/**
+ * Development-only controls for exercising UI behavior against mock data.
+ *
+ * RealCompanionApi MUST NOT implement this interface. These methods never represent
+ * ordinary player authority in the persistent HELION universe.
+ */
+interface DevelopmentSimulationApi {
+    suspend fun simulateShipWear(
+        shipInstanceId: String,
+        hullDamage: Float,
+        wearIncrease: Float
+    ): Result<OwnedShipInstance>
+
+    suspend fun updateCommodityPrice(
+        commodityId: String,
+        newBuyPrice: Long,
+        newSellPrice: Long,
+        stationId: String? = null
+    ): Result<MarketItem>
 }

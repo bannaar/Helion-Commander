@@ -206,7 +206,7 @@ fun TacticalMissionDashboardContent(
                 DashboardKpiCard(
                     title = "TOTAL BOUNTIES",
                     value = "${metrics.totalCreditsEarned / 1000}k",
-                    unit = "Credits (CR)",
+                    unit = "GSC",
                     accentColor = HelionHighSecGreen,
                     icon = Icons.Default.MonetizationOn,
                     trendLabel = "Authoritative",
@@ -408,7 +408,7 @@ fun WeeklyMissionsBarChartCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Chart Mode Filter Chips (Total Completed vs By Category vs Bounty Credits)
+            // Chart Mode Filter Chips (Total Completed vs By Category vs GSC Earned)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -793,9 +793,9 @@ fun SelectedWeekDetailCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text("Bounty Credits Payout", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted, fontSize = 10.sp)
+                    Text("GSC Payout", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted, fontSize = 10.sp)
                     Text(
-                        text = "${numberFormat.format(record.creditsEarned)} CR",
+                        text = "${numberFormat.format(record.creditsEarned)} GSC",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = HelionAmber

@@ -1,0 +1,22 @@
+Read AI_STUDIO_INSTRUCTIONS.md first, then read every file under docs/commander, docs/project, and docs/canon.
+
+Audit the current HELION Commander repository before changing code.
+
+Classify every advertised feature as:
+- VERIFIED REAL SERVER
+- LOCAL/CACHED
+- MOCKED
+- PLANNED
+- UNKNOWN / NEEDS AUDIT
+
+Search maintained player-facing content for stale terminology: GalNet, Credits, Null-Sec, Helion Concordat, Concordia, Titan Forge, New Eden, Sidewinder.
+
+Do not blindly rename compatibility-sensitive internal identifiers. Update player-facing terms immediately and migrate persisted/protocol identifiers only with tests.
+
+Verify that FakeCompanionApi remains clearly mock-only and that ordinary CompanionApi does not expose developer simulation powers.
+
+Verify that the universe seed does not assign major sovereign capitals to player sovereignty or Zero Space.
+
+Do not invent server endpoints or claim that proposed REST/WebSocket contracts are implemented.
+
+Return a concise audit and an incremental correction plan, then make only changes that preserve buildability and server authority.

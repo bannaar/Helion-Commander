@@ -171,7 +171,7 @@ fun ArticleListContent(
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = onSearchQuery,
-                label = { Text("Filter GalNet news feed...") },
+                label = { Text("Filter UniNet news feed...") },
                 leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = HelionCyan) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "helion-commander-public-canon-v0.20",
+  "status": "DEVELOPMENT_REFERENCE_NOT_SERVER_TRUTH",
+  "chronology": {
+    "severanceYearAS": 187,
+    "presentYearAS": 1087,
+    "yearsSinceSeverance": 900
+  },
+  "knownSpace": {
+    "totalSystems": 200,
+    "factionControlled": 120,
+    "zeroSpace": 80,
+    "majorPowers": [
+      {
+        "name": "Helion Commonwealth",
+        "systems": 27,
+        "capital": "Crownspire"
+      },
+      {
+        "name": "Solar Directorate",
+        "systems": 25
+      },
+      {
+        "name": "Free Systems Compact",
+        "systems": 25
+      },
+      {
+        "name": "Meridian League",
+        "systems": 23
+      },
+      {
+        "name": "Aurelian Synod",
+        "systems": 20,
+        "center": "Aurelia"
+      }
+    ]
+  },
+  "institutions": {
+    "igg": {
+      "name": "Inter-Galactic Governance",
+      "sovereignNation": false,
+      "arms": [
+        "INSA",
+        "Gatewatch",
+        "Galactic Defense Force (GDF)"
+      ]
+    }
+  },
+  "terminology": {
+    "currency": "GSC",
+    "informationNetwork": "UniNet",
+    "zeroSecurityKnownSpace": "Zero Space",
+    "riftDomain": "Riftspace",
+    "advancedArchitecture": "ASA",
+    "heavyManufacturer": "Ironstar Forge",
+    "lostColony": "Verdance"
+  },
+  "knowledgeStates": [
+    "DETECTED",
+    "CLASSIFIED",
+    "LOCATED",
+    "SURVEYED"
+  ],
+  "guardrails": {
+    "zeroSpaceIsNotTheNull": true,
+    "riftspaceOutsideKnownSpaceCount": true,
+    "doNotExposeHiddenServerTruth": true
+  }
+}

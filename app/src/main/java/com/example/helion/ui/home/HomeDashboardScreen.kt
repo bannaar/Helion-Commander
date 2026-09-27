@@ -159,7 +159,7 @@ fun HomeDashboardScreen(
                                 color = HelionTextMuted
                             )
                             Text(
-                                text = "${numberFormat.format(cmd.credits)} CR",
+                                text = "${numberFormat.format(cmd.credits)} GSC",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = HelionAmber,
                                 fontWeight = FontWeight.Bold
@@ -347,7 +347,7 @@ fun HomeDashboardScreen(
                                 border = androidx.compose.foundation.BorderStroke(0.8.dp, HelionAmber)
                             ) {
                                 Text(
-                                    text = "${numberFormat.format(priority.creditReward)} CR",
+                                    text = "${numberFormat.format(priority.creditReward)} GSC",
                                     color = HelionAmber,
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
@@ -570,7 +570,7 @@ fun HomeDashboardScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Column(horizontalAlignment = Alignment.End) {
                                         Text(
-                                            text = "${numberFormat.format(item.buyPrice)} CR",
+                                            text = "${numberFormat.format(item.buyPrice)} GSC",
                                             style = MaterialTheme.typography.titleMedium,
                                             color = HelionAmber,
                                             fontWeight = FontWeight.Bold
@@ -583,7 +583,7 @@ fun HomeDashboardScreen(
                                                 modifier = Modifier.size(10.dp)
                                             )
                                             Text(
-                                                text = "${if (item.priceTrendDelta >= 0) "+" else ""}${item.priceTrendDelta} CR",
+                                                text = "${if (item.priceTrendDelta >= 0) "+" else ""}${item.priceTrendDelta} GSC",
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = if (item.priceTrendDelta >= 0) HelionHighSecGreen else HelionDangerRed
                                             )
@@ -597,10 +597,10 @@ fun HomeDashboardScreen(
             }
         }
 
-        // 5. GALNET HEADLINES
+        // 5. UNINET HEADLINES (legacy internal GalNet model)
         item {
             HelionCard(
-                title = "GalNet Wire",
+                title = "UniNet Wire",
                 badgeText = "Breaking",
                 badgeColor = HelionDangerRed,
                 accentColor = HelionDangerRed,

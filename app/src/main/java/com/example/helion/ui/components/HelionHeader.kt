@@ -139,7 +139,7 @@ fun HelionHeader(
             // Quick Status Pill
             if (commander != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Credits
+                    // GSC
                     Surface(
                         shape = RoundedCornerShape(4.dp),
                         color = HelionSurface,
@@ -153,7 +153,7 @@ fun HelionHeader(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "CR",
+                                text = "GSC",
                                 color = HelionAmber,
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold
