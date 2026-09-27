@@ -58,6 +58,8 @@ class SettingsViewModel(val container: HelionAppContainer) : ViewModel() {
         }
     }
 
+    fun profileFor(env: ServerEnvironment): ServerProfile = container.apiFactory.getProfile(env)
+
     fun requestSwitchEnvironment(env: ServerEnvironment) {
         if (env == _uiState.value.currentServerEnvironment) return
 
