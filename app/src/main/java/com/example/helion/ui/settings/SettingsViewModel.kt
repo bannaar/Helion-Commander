@@ -7,6 +7,7 @@ import com.example.helion.core.model.HelionEnvironment
 import com.example.helion.core.model.ServerEnvironment
 import com.example.helion.core.model.ServerProfile
 import com.example.helion.core.model.ServerStatus
+import com.example.helion.core.network.isValidCompanionTokenFormat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +20,10 @@ data class SettingsUiState(
     val serverStatus: ServerStatus? = null,
     val serverStatusError: String? = null,
     val isCheckingStatus: Boolean = false,
+    val companionCredentialConfigured: Boolean = false,
+    val companionTokenDraft: String = "",
+    val credentialMessage: String? = null,
+    val isVerifyingCredential: Boolean = false,
     val pendingProductionSwitch: Boolean = false,
     val isOfflineSimulated: Boolean = false,
     val notifyDMs: Boolean = true,
@@ -43,10 +48,19 @@ class SettingsViewModel(val container: HelionAppContainer) : ViewModel() {
         viewModelScope.launch {
             container.settingsRepository.currentServerEnvironment.collect { env ->
                 val profile = container.apiFactory.getProfile(env)
+                val credentialConfigured = if (env == ServerEnvironment.DEMO) {
+                    false
+                } else {
+                    runCatching { container.credentialStore.getCompanionToken(env) != null }
+                        .getOrDefault(false)
+                }
                 _uiState.value = _uiState.value.copy(
                     currentServerEnvironment = env,
                     currentEnvironment = HelionEnvironment.fromServerEnvironment(env),
-                    serverProfile = profile
+                    serverProfile = profile,
+                    companionCredentialConfigured = credentialConfigured,
+                    companionTokenDraft = "",
+                    credentialMessage = null
                 )
                 refreshServerStatus()
             }
@@ -119,6 +133,85 @@ class SettingsViewModel(val container: HelionAppContainer) : ViewModel() {
                         serverStatus = null,
                         serverStatusError = error.message ?: "Server unavailable",
                         isCheckingStatus = false
+                    )
+                }
+            )
+        }
+    }
+
+    fun updateCompanionTokenDraft(value: String) {
+        if (value.length > 128 || value.contains('\n') || value.contains('\r')) return
+        _uiState.value = _uiState.value.copy(
+            companionTokenDraft = value,
+            credentialMessage = null
+        )
+    }
+
+    fun saveCompanionCredential() {
+        val env = _uiState.value.currentServerEnvironment
+        if (env == ServerEnvironment.DEMO) {
+            _uiState.value = _uiState.value.copy(
+                credentialMessage = "DEMO/OFFLINE does not use authoritative companion credentials."
+            )
+            return
+        }
+        val token = _uiState.value.companionTokenDraft.trim()
+        if (!isValidCompanionTokenFormat(token)) {
+            _uiState.value = _uiState.value.copy(
+                credentialMessage = "Invalid companion token format. Expected an hc1 token issued by the HELION server."
+            )
+            return
+        }
+        try {
+            container.credentialStore.setCompanionToken(env, token)
+            _uiState.value = _uiState.value.copy(
+                companionCredentialConfigured = true,
+                companionTokenDraft = "",
+                credentialMessage = "Companion credential stored encrypted for ${env.displayName}."
+            )
+        } catch (error: Exception) {
+            _uiState.value = _uiState.value.copy(
+                credentialMessage = error.message ?: "Unable to store companion credential."
+            )
+        }
+    }
+
+    fun clearCompanionCredential() {
+        val env = _uiState.value.currentServerEnvironment
+        if (env != ServerEnvironment.DEMO) {
+            container.credentialStore.clearCompanionToken(env)
+        }
+        container.commanderRepository.clearEnvironmentState()
+        _uiState.value = _uiState.value.copy(
+            companionCredentialConfigured = false,
+            companionTokenDraft = "",
+            credentialMessage = "Companion credential cleared for ${env.displayName}."
+        )
+    }
+
+    fun verifyCompanionCredential() {
+        val env = _uiState.value.currentServerEnvironment
+        if (env == ServerEnvironment.DEMO) {
+            _uiState.value = _uiState.value.copy(
+                credentialMessage = "DEMO/OFFLINE does not use companion authentication."
+            )
+            return
+        }
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isVerifyingCredential = true)
+            val result = container.commanderRepository.refreshCommanderProfile()
+            result.fold(
+                onSuccess = { profile ->
+                    _uiState.value = _uiState.value.copy(
+                        companionCredentialConfigured = true,
+                        credentialMessage = "Verified profile.read access for ${profile.displayName}.",
+                        isVerifyingCredential = false
+                    )
+                },
+                onFailure = { error ->
+                    _uiState.value = _uiState.value.copy(
+                        credentialMessage = error.message ?: "Companion credential verification failed.",
+                        isVerifyingCredential = false
                     )
                 }
             )
