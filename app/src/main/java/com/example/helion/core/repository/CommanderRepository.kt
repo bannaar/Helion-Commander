@@ -11,8 +11,12 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class CommanderRepository(
     private val api: CompanionApi,
-    private val commanderDao: CommanderDao
+    private val commanderDaoProvider: () -> CommanderDao
 ) {
+    constructor(api: CompanionApi, commanderDao: CommanderDao) : this(api, { commanderDao })
+
+    private val commanderDao: CommanderDao
+        get() = commanderDaoProvider()
     private val _commanderState = MutableStateFlow<CommanderProfile?>(null)
     val commanderState: StateFlow<CommanderProfile?> = _commanderState.asStateFlow()
 
@@ -41,4 +45,8 @@ class CommanderRepository(
     }
 
     fun getCachedCommander(): Flow<CachedCommanderEntity?> = commanderDao.getCachedCommander()
+
+    fun clearEnvironmentState() {
+        _commanderState.value = null
+    }
 }

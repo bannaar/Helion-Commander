@@ -15,8 +15,12 @@ import java.util.UUID
 
 class UniverseRepository(
     private val api: CompanionApi,
-    private val bookmarkDao: RouteBookmarkDao
+    private val bookmarkDaoProvider: () -> RouteBookmarkDao
 ) {
+    constructor(api: CompanionApi, bookmarkDao: RouteBookmarkDao) : this(api, { bookmarkDao })
+
+    private val bookmarkDao: RouteBookmarkDao
+        get() = bookmarkDaoProvider()
     private val _systemsMap = MutableStateFlow<Map<String, SystemNode>>(emptyMap())
     val systemsMap: StateFlow<Map<String, SystemNode>> = _systemsMap.asStateFlow()
 
@@ -55,5 +59,9 @@ class UniverseRepository(
 
     suspend fun deleteBookmark(bookmarkId: String) {
         bookmarkDao.deleteBookmark(bookmarkId)
+    }
+
+    fun clearEnvironmentState() {
+        _systemsMap.value = emptyMap()
     }
 }

@@ -10,6 +10,7 @@ import com.example.helion.core.model.MarketTransactionRequest
 import com.example.helion.core.model.MarketTransactionResult
 import com.example.helion.core.network.CompanionApi
 import com.example.helion.core.network.DevelopmentSimulationApi
+import com.example.helion.core.network.DelegatingCompanionApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,9 +18,20 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class MarketRepository(
     private val api: CompanionApi,
-    private val watchlistDao: MarketWatchlistDao,
-    private val priceAlertDao: MarketPriceAlertDao
+    private val watchlistDaoProvider: () -> MarketWatchlistDao,
+    private val priceAlertDaoProvider: () -> MarketPriceAlertDao
 ) {
+    constructor(
+        api: CompanionApi,
+        watchlistDao: MarketWatchlistDao,
+        priceAlertDao: MarketPriceAlertDao
+    ) : this(api, { watchlistDao }, { priceAlertDao })
+
+    private val watchlistDao: MarketWatchlistDao
+        get() = watchlistDaoProvider()
+
+    private val priceAlertDao: MarketPriceAlertDao
+        get() = priceAlertDaoProvider()
     private val _localMarket = MutableStateFlow<List<MarketItem>>(emptyList())
     val localMarket: StateFlow<List<MarketItem>> = _localMarket.asStateFlow()
 
@@ -44,7 +56,7 @@ class MarketRepository(
         newSellPrice: Long,
         stationId: String? = null
     ): Result<MarketItem> {
-        val simulationApi = api as? DevelopmentSimulationApi
+        val simulationApi = developmentSimulationApi()
             ?: return Result.failure(UnsupportedOperationException("Market-price mutation is available only in development simulation."))
         val res = simulationApi.updateCommodityPrice(commodityId, newBuyPrice, newSellPrice, stationId)
         res.onSuccess {
@@ -126,5 +138,16 @@ class MarketRepository(
 
     suspend fun deletePriceAlert(alertId: String) {
         priceAlertDao.deleteAlert(alertId)
+    }
+
+    fun clearEnvironmentState() {
+        _localMarket.value = emptyList()
+        _regionalMarket.value = emptyList()
+    }
+
+    private fun developmentSimulationApi(): DevelopmentSimulationApi? = when (api) {
+        is DevelopmentSimulationApi -> api
+        is DelegatingCompanionApi -> api.currentApi as? DevelopmentSimulationApi
+        else -> null
     }
 }

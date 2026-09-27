@@ -13,6 +13,8 @@ import com.example.helion.core.model.MarketTransactionResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -53,6 +55,7 @@ class MarketViewModel(private val container: HelionAppContainer) : ViewModel() {
         observeWatchlist()
         observePriceAlerts()
         observeOffline()
+        observeEnvironmentChanges()
     }
 
     private fun observeOffline() {
@@ -65,21 +68,37 @@ class MarketViewModel(private val container: HelionAppContainer) : ViewModel() {
 
     private fun observeWatchlist() {
         viewModelScope.launch {
-            container.marketRepository.getWatchlist().collect { list ->
-                _uiState.value = _uiState.value.copy(watchlist = list)
+            container.settingsRepository.currentServerEnvironment.collectLatest {
+                _uiState.value = _uiState.value.copy(watchlist = emptyList())
+                container.marketRepository.getWatchlist().collect { list ->
+                    _uiState.value = _uiState.value.copy(watchlist = list)
+                }
             }
         }
     }
 
     private fun observePriceAlerts() {
         viewModelScope.launch {
-            container.marketRepository.getAllPriceAlerts().collect { list ->
-                _uiState.value = _uiState.value.copy(priceAlerts = list)
-                // Check if current prices trigger any active alerts
-                evaluatePriceThresholds(
-                    items = _uiState.value.localCommodities + _uiState.value.regionalCommodities,
-                    alerts = list
-                )
+            container.settingsRepository.currentServerEnvironment.collectLatest {
+                _uiState.value = _uiState.value.copy(priceAlerts = emptyList())
+                container.marketRepository.getAllPriceAlerts().collect { list ->
+                    _uiState.value = _uiState.value.copy(priceAlerts = list)
+                    // Check if current prices trigger any active alerts
+                    evaluatePriceThresholds(
+                        items = _uiState.value.localCommodities + _uiState.value.regionalCommodities,
+                        alerts = list
+                    )
+                }
+            }
+        }
+    }
+
+    private fun observeEnvironmentChanges() {
+        viewModelScope.launch {
+            container.settingsRepository.currentServerEnvironment.drop(1).collect {
+                val offline = _uiState.value.isOffline
+                _uiState.value = MarketUiState(isLoading = true, isOffline = offline)
+                loadMarketData()
             }
         }
     }

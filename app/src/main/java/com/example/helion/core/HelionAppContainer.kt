@@ -36,17 +36,38 @@ class HelionAppContainer(val context: Context) {
     val notificationManager = HelionNotificationManager(context)
 
     val settingsRepository = SettingsRepository(api, environmentPreferences)
-    val commanderRepository = CommanderRepository(api, database.commanderDao())
-    val fleetRepository = FleetRepository(api, database.loadoutPlanDao())
-    val universeRepository = UniverseRepository(api, database.routeBookmarkDao())
-    val marketRepository = MarketRepository(api, database.marketWatchlistDao(), database.marketPriceAlertDao())
-    val galNetRepository = GalNetRepository(api, database.galNetDao())
+    val commanderRepository = CommanderRepository(api) { database.commanderDao() }
+    val fleetRepository = FleetRepository(api) { database.loadoutPlanDao() }
+    val universeRepository = UniverseRepository(api) { database.routeBookmarkDao() }
+    val marketRepository = MarketRepository(
+        api,
+        { database.marketWatchlistDao() },
+        { database.marketPriceAlertDao() }
+    )
+    val galNetRepository = GalNetRepository(api) { database.galNetDao() }
     val guildRepository = GuildRepository(api)
     val commsRepository = CommsRepository(api)
-    val tacticalMissionsRepository = TacticalMissionsRepository(api, database.tacticalMissionDao())
+    val tacticalMissionsRepository = TacticalMissionsRepository(api) { database.tacticalMissionDao() }
 
     fun setActiveServerEnvironment(env: ServerEnvironment) {
+        if (env == activeEnvironment) {
+            settingsRepository.setServerEnvironmentLocally(env)
+            return
+        }
+
         activeEnvironment = env
-        environmentPreferences.setSelectedEnvironment(env)
+        clearEnvironmentScopedInMemoryState()
+        settingsRepository.setServerEnvironmentLocally(env)
+    }
+
+    private fun clearEnvironmentScopedInMemoryState() {
+        commanderRepository.clearEnvironmentState()
+        fleetRepository.clearEnvironmentState()
+        universeRepository.clearEnvironmentState()
+        marketRepository.clearEnvironmentState()
+        galNetRepository.clearEnvironmentState()
+        guildRepository.clearEnvironmentState()
+        commsRepository.clearEnvironmentState()
+        tacticalMissionsRepository.clearEnvironmentState()
     }
 }

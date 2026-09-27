@@ -15,8 +15,10 @@ import com.example.helion.core.network.ServerNotConfiguredException
 import com.example.helion.core.session.AuthCredentialStore
 import com.example.helion.core.session.EnvironmentPreferences
 import com.example.helion.ui.settings.SettingsViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -45,6 +47,14 @@ class ServerEnvironmentIsolationTest {
         preferences = EnvironmentPreferences(context)
         credentialStore = AuthCredentialStore(context)
         credentialStore.clearAll()
+        preferences.setSelectedEnvironment(ServerEnvironment.DEMO)
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                ServerEnvironment.values().forEach { env ->
+                    AppDatabase.getInstance(context, env).clearAllTables()
+                }
+            }
+        }
         apiFactory = DefaultCompanionApiFactory()
         container = HelionAppContainer(context)
     }
@@ -227,4 +237,85 @@ class ServerEnvironmentIsolationTest {
         val fetchedDemo = demoDb.commanderDao().getCachedCommander().first()
         assertNull("DEMO database must NOT contain data inserted into TEST database", fetchedDemo)
     }
+
+    @Test
+    fun testRepositoryPersistenceFollowsEnvironmentSwitch() = runBlocking {
+        val demoPlanId = container.fleetRepository.savePlan(
+            name = "DEMO isolation plan",
+            hullId = "hull-demo",
+            hullName = "Demo Hull",
+            plannedModules = mapOf("slot-1" to "module-demo")
+        )
+
+        container.setActiveServerEnvironment(ServerEnvironment.PRIVATE_TEST)
+
+        val testPlanId = container.fleetRepository.savePlan(
+            name = "TEST isolation plan",
+            hullId = "hull-test",
+            hullName = "Test Hull",
+            plannedModules = mapOf("slot-1" to "module-test")
+        )
+
+        val demoPlans = AppDatabase.getInstance(context, ServerEnvironment.DEMO)
+            .loadoutPlanDao()
+            .getAllSavedPlans()
+            .first()
+        val testPlans = AppDatabase.getInstance(context, ServerEnvironment.PRIVATE_TEST)
+            .loadoutPlanDao()
+            .getAllSavedPlans()
+            .first()
+        val prodPlans = AppDatabase.getInstance(context, ServerEnvironment.PRODUCTION)
+            .loadoutPlanDao()
+            .getAllSavedPlans()
+            .first()
+
+        assertTrue("DEMO plan must remain in DEMO database", demoPlans.any { it.planId == demoPlanId })
+        assertFalse("DEMO plan must not leak into TEST database", testPlans.any { it.planId == demoPlanId })
+        assertTrue("TEST plan must be written to TEST database after switch", testPlans.any { it.planId == testPlanId })
+        assertFalse("TEST plan must not remain bound to DEMO database", demoPlans.any { it.planId == testPlanId })
+        assertFalse("TEST plan must not leak into PRODUCTION database", prodPlans.any { it.planId == testPlanId })
+    }
+
+    @Test
+    fun testEnvironmentSwitchClearsInMemoryAuthoritativeState() = runBlocking {
+        assertTrue(container.commanderRepository.refreshCommanderProfile().isSuccess)
+        assertTrue(container.fleetRepository.refreshFleet().isSuccess)
+        assertTrue(container.marketRepository.refreshLocalMarket().isSuccess)
+
+        assertNotNull(container.commanderRepository.commanderState.value)
+        assertTrue(container.fleetRepository.ownedShips.value.isNotEmpty())
+        assertTrue(container.marketRepository.localMarket.value.isNotEmpty())
+
+        container.setActiveServerEnvironment(ServerEnvironment.PRIVATE_TEST)
+
+        assertNull("Commander state from DEMO must be cleared on TEST switch", container.commanderRepository.commanderState.value)
+        assertTrue("Fleet state from DEMO must be cleared on TEST switch", container.fleetRepository.ownedShips.value.isEmpty())
+        assertTrue("Market state from DEMO must be cleared on TEST switch", container.marketRepository.localMarket.value.isEmpty())
+    }
+
+    @Test
+    fun testDemoSimulationPowersFollowDelegatedEnvironment() = runBlocking {
+        val demoMarket = container.marketRepository.refreshLocalMarket().getOrThrow()
+        val item = demoMarket.first()
+
+        val demoMutation = container.marketRepository.updateCommodityPrice(
+            commodityId = item.commodityId,
+            newBuyPrice = item.buyPrice + 1,
+            newSellPrice = item.sellPrice + 1,
+            stationId = item.stationId
+        )
+        assertTrue("DEMO must retain development simulation controls", demoMutation.isSuccess)
+
+        container.setActiveServerEnvironment(ServerEnvironment.PRIVATE_TEST)
+
+        val testMutation = container.marketRepository.updateCommodityPrice(
+            commodityId = item.commodityId,
+            newBuyPrice = item.buyPrice + 2,
+            newSellPrice = item.sellPrice + 2,
+            stationId = item.stationId
+        )
+        assertTrue("PRIVATE TEST ordinary companion path must not expose local simulation controls", testMutation.isFailure)
+        assertTrue(testMutation.exceptionOrNull() is UnsupportedOperationException)
+    }
+
 }

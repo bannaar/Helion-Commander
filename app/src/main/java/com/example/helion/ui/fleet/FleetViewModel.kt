@@ -11,6 +11,8 @@ import com.example.helion.core.model.ShipDefinition
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 enum class FleetFilter(val label: String) {
@@ -55,12 +57,25 @@ class FleetViewModel(private val container: HelionAppContainer) : ViewModel() {
     init {
         loadFleetData()
         observeSavedPlans()
+        observeEnvironmentChanges()
     }
 
     private fun observeSavedPlans() {
         viewModelScope.launch {
-            container.fleetRepository.getSavedPlans().collect { plans ->
-                _uiState.value = _uiState.value.copy(savedPlans = plans)
+            container.settingsRepository.currentServerEnvironment.collectLatest {
+                _uiState.value = _uiState.value.copy(savedPlans = emptyList())
+                container.fleetRepository.getSavedPlans().collect { plans ->
+                    _uiState.value = _uiState.value.copy(savedPlans = plans)
+                }
+            }
+        }
+    }
+
+    private fun observeEnvironmentChanges() {
+        viewModelScope.launch {
+            container.settingsRepository.currentServerEnvironment.drop(1).collect {
+                _uiState.value = FleetUiState(isLoading = true)
+                loadFleetData()
             }
         }
     }

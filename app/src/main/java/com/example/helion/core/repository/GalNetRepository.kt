@@ -13,8 +13,12 @@ import kotlinx.coroutines.flow.map
 
 class GalNetRepository(
     private val api: CompanionApi,
-    private val galNetDao: GalNetDao
+    private val galNetDaoProvider: () -> GalNetDao
 ) {
+    constructor(api: CompanionApi, galNetDao: GalNetDao) : this(api, { galNetDao })
+
+    private val galNetDao: GalNetDao
+        get() = galNetDaoProvider()
     private val _articles = MutableStateFlow<List<GalNetArticle>>(emptyList())
     val articles: StateFlow<List<GalNetArticle>> = _articles.asStateFlow()
 
@@ -79,5 +83,9 @@ class GalNetRepository(
                 isSaved = entity.isSaved
             )
         }
+    }
+
+    fun clearEnvironmentState() {
+        _articles.value = emptyList()
     }
 }

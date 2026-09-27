@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -45,6 +46,7 @@ class TacticalMissionsViewModel(
 
     init {
         loadMissions()
+        observeEnvironmentChanges()
         // Collect repository state flow and monitor for 100% progress
         viewModelScope.launch {
             container.tacticalMissionsRepository.missionsState.collect { list ->
@@ -63,6 +65,17 @@ class TacticalMissionsViewModel(
                         container.notificationManager.notifyMissionProgressComplete(mission, isFleetTask = true)
                     }
                 }
+            }
+        }
+    }
+
+    private fun observeEnvironmentChanges() {
+        viewModelScope.launch {
+            container.settingsRepository.currentServerEnvironment.drop(1).collect {
+                simulationJob?.cancel()
+                simulationJob = null
+                _uiState.value = TacticalMissionsUiState(isLoading = true)
+                loadMissions()
             }
         }
     }
@@ -210,7 +223,7 @@ class TacticalMissionsViewModel(
                 // Refresh commander to show updated credits
                 container.commanderRepository.refreshCommanderProfile()
                 _uiState.value = _uiState.value.copy(
-                    actionBannerMessage = "BOUNTY CLAIMED: +${updated.creditReward} Credits & +${updated.standingReward} Standing added to Commander account!",
+                    actionBannerMessage = "BOUNTY CLAIMED: +${updated.creditReward} GSC & +${updated.standingReward} Standing added to Commander account!",
                     selectedMission = if (_uiState.value.selectedMission?.id == missionId) updated else _uiState.value.selectedMission
                 )
             }

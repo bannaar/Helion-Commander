@@ -13,6 +13,8 @@ import com.example.helion.core.model.ThreatLevel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 data class UniverseUiState(
@@ -40,12 +42,25 @@ class UniverseViewModel(private val container: HelionAppContainer) : ViewModel()
     init {
         loadUniverseData()
         observeBookmarks()
+        observeEnvironmentChanges()
     }
 
     private fun observeBookmarks() {
         viewModelScope.launch {
-            container.universeRepository.getBookmarks().collect { bms ->
-                _uiState.value = _uiState.value.copy(bookmarks = bms)
+            container.settingsRepository.currentServerEnvironment.collectLatest {
+                _uiState.value = _uiState.value.copy(bookmarks = emptyList())
+                container.universeRepository.getBookmarks().collect { bms ->
+                    _uiState.value = _uiState.value.copy(bookmarks = bms)
+                }
+            }
+        }
+    }
+
+    private fun observeEnvironmentChanges() {
+        viewModelScope.launch {
+            container.settingsRepository.currentServerEnvironment.drop(1).collect {
+                _uiState.value = UniverseUiState(isLoading = true)
+                loadUniverseData()
             }
         }
     }

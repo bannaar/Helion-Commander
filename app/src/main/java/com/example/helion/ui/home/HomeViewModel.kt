@@ -28,7 +28,7 @@ data class HomeDashboardUiState(
     val latestArticles: List<GalNetArticle> = emptyList(),
     val guildInfo: GuildInfo? = null,
     val unreadCommsCount: Int = 2,
-    val environment: HelionEnvironment = HelionEnvironment.PRODUCTION,
+    val environment: HelionEnvironment = HelionEnvironment.DEVELOPMENT,
     val isOffline: Boolean = false,
     val errorMessage: String? = null
 )
@@ -46,7 +46,18 @@ class HomeViewModel(private val container: HelionAppContainer) : ViewModel() {
     private fun observeEnvironment() {
         viewModelScope.launch {
             container.settingsRepository.currentEnvironment.collect { env ->
-                _uiState.value = _uiState.value.copy(environment = env)
+                val changed = _uiState.value.environment != env
+                if (changed) {
+                    val offline = _uiState.value.isOffline
+                    _uiState.value = HomeDashboardUiState(
+                        isLoading = true,
+                        environment = env,
+                        isOffline = offline
+                    )
+                    loadDashboardData()
+                } else {
+                    _uiState.value = _uiState.value.copy(environment = env)
+                }
             }
         }
         viewModelScope.launch {

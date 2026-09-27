@@ -8,6 +8,7 @@ import com.example.helion.core.model.GalNetChannel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 data class GalNetUiState(
@@ -26,6 +27,16 @@ class GalNetViewModel(private val container: HelionAppContainer) : ViewModel() {
 
     init {
         loadArticles()
+        observeEnvironmentChanges()
+    }
+
+    private fun observeEnvironmentChanges() {
+        viewModelScope.launch {
+            container.settingsRepository.currentServerEnvironment.drop(1).collect {
+                _uiState.value = GalNetUiState(isLoading = true)
+                loadArticles()
+            }
+        }
     }
 
     fun loadArticles() {

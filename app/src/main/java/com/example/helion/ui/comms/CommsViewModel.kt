@@ -8,6 +8,7 @@ import com.example.helion.core.model.UniverseMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 data class CommsUiState(
@@ -26,6 +27,16 @@ class CommsViewModel(private val container: HelionAppContainer) : ViewModel() {
 
     init {
         loadConversations()
+        observeEnvironmentChanges()
+    }
+
+    private fun observeEnvironmentChanges() {
+        viewModelScope.launch {
+            container.settingsRepository.currentServerEnvironment.drop(1).collect {
+                _uiState.value = CommsUiState(isLoading = true)
+                loadConversations()
+            }
+        }
     }
 
     fun loadConversations() {

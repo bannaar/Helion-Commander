@@ -7,6 +7,7 @@ import com.example.helion.core.model.CommanderProfile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 data class CommanderUiState(
@@ -22,6 +23,16 @@ class CommanderViewModel(private val container: HelionAppContainer) : ViewModel(
 
     init {
         loadProfile()
+        observeEnvironmentChanges()
+    }
+
+    private fun observeEnvironmentChanges() {
+        viewModelScope.launch {
+            container.settingsRepository.currentServerEnvironment.drop(1).collect {
+                _uiState.value = CommanderUiState(isLoading = true)
+                loadProfile()
+            }
+        }
     }
 
     fun loadProfile() {

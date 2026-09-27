@@ -36,13 +36,17 @@ class SettingsRepository(
     private val _notifyGalNetFlash = MutableStateFlow(true)
     val notifyGalNetFlash: StateFlow<Boolean> = _notifyGalNetFlash.asStateFlow()
 
+    fun setServerEnvironmentLocally(env: ServerEnvironment) {
+        _currentServerEnvironment.value = env
+        _currentEnvironment.value = HelionEnvironment.fromServerEnvironment(env)
+        preferences?.setSelectedEnvironment(env)
+    }
+
     suspend fun switchServerEnvironment(env: ServerEnvironment): Result<Unit> {
         val helionEnv = HelionEnvironment.fromServerEnvironment(env)
         val res = api.switchEnvironment(helionEnv)
         res.onSuccess {
-            _currentServerEnvironment.value = env
-            _currentEnvironment.value = helionEnv
-            preferences?.setSelectedEnvironment(env)
+            setServerEnvironmentLocally(env)
         }
         return res
     }

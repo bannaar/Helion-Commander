@@ -36,4 +36,9 @@ class CommsRepository(
         }
         return res
     }
+
+    fun clearEnvironmentState() {
+        _conversations.value = emptyList()
+        _activeMessages.value = emptyList()
+    }
 }
