@@ -3,9 +3,10 @@ package com.example.helion.core.network
 import com.example.helion.core.model.ServerEndpoint
 import com.example.helion.core.model.ServerEnvironment
 import com.example.helion.core.model.ServerStatus
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.net.InetSocketAddress
+import java.net.Socket
 import java.nio.charset.StandardCharsets
 import javax.net.ssl.SSLSocket
 import javax.net.ssl.SSLSocketFactory
@@ -35,37 +36,39 @@ class TlsNativeServerStatusProbe(
         endpoint: ServerEndpoint
     ): Result<ServerStatus> = withContext(Dispatchers.IO) {
         try {
-            val rawSocket = socketFactory.createSocket()
-            val socket = rawSocket as? SSLSocket
-                ?: throw ServerUnavailableException("TLS socket factory did not create an SSL socket.")
-
-            val status = socket.use { tlsSocket ->
-                tlsSocket.soTimeout = readTimeoutMs
-
-                val allowedProtocols = listOf("TLSv1.3", "TLSv1.2")
-                    .filter { it in tlsSocket.supportedProtocols }
-                if (allowedProtocols.isEmpty()) {
-                    throw ServerUnavailableException("TLS 1.2 or newer is unavailable on this device.")
-                }
-                tlsSocket.enabledProtocols = allowedProtocols.toTypedArray()
-
-                val sslParameters = tlsSocket.sslParameters
-                sslParameters.endpointIdentificationAlgorithm = "HTTPS"
-                tlsSocket.sslParameters = sslParameters
-
-                tlsSocket.connect(
+            val status = Socket().use { tcpSocket ->
+                tcpSocket.connect(
                     InetSocketAddress(endpoint.host, endpoint.port),
                     connectTimeoutMs
                 )
-                tlsSocket.startHandshake()
 
-                val reader = BufferedReader(
-                    InputStreamReader(tlsSocket.inputStream, StandardCharsets.UTF_8)
-                )
-                val welcome = reader.readLine()
-                    ?: throw ServerUnavailableException("HELION server closed the connection before sending a welcome line.")
+                val tlsSocket = socketFactory.createSocket(
+                    tcpSocket,
+                    endpoint.host,
+                    endpoint.port,
+                    true
+                ) as? SSLSocket
+                    ?: throw ServerUnavailableException("TLS socket factory did not create an SSL socket.")
 
-                parseNativeServerWelcome(environment, welcome)
+                tlsSocket.use { socket ->
+                    socket.soTimeout = readTimeoutMs
+
+                    val allowedProtocols = listOf("TLSv1.3", "TLSv1.2")
+                        .filter { it in socket.supportedProtocols }
+                    if (allowedProtocols.isEmpty()) {
+                        throw ServerUnavailableException("TLS 1.2 or newer is unavailable on this device.")
+                    }
+                    socket.enabledProtocols = allowedProtocols.toTypedArray()
+
+                    val sslParameters = socket.sslParameters
+                    sslParameters.endpointIdentificationAlgorithm = "HTTPS"
+                    socket.sslParameters = sslParameters
+
+                    socket.startHandshake()
+
+                    val welcome = readNativeProtocolLine(socket.inputStream)
+                    parseNativeServerWelcome(environment, welcome)
+                }
             }
             Result.success(status)
         } catch (cancelled: CancellationException) {
@@ -83,6 +86,39 @@ class TlsNativeServerStatusProbe(
             )
         }
     }
+}
+
+private const val HELION_NATIVE_MAX_LINE_BYTES = 4096
+
+private fun readNativeProtocolLine(input: InputStream): String {
+    val bytes = ByteArrayOutputStream()
+    while (true) {
+        val value = input.read()
+        if (value == -1) {
+            throw ServerUnavailableException(
+                if (bytes.size() == 0) {
+                    "HELION server closed the connection before sending a welcome line."
+                } else {
+                    "HELION server closed the connection before terminating the welcome line."
+                }
+            )
+        }
+        if (value == '\n'.code) break
+        if (bytes.size() >= HELION_NATIVE_MAX_LINE_BYTES) {
+            throw ServerUnavailableException("HELION server greeting exceeded the 4096-byte protocol limit.")
+        }
+        if (
+            value == 0 ||
+            (value < 0x20 && value != '\t'.code && value != '\r'.code) ||
+            value == 0x7f
+        ) {
+            throw ServerUnavailableException("HELION server greeting contained an invalid control byte.")
+        }
+        bytes.write(value)
+    }
+
+    val line = bytes.toString(StandardCharsets.UTF_8.name())
+    return if (line.endsWith("\r")) line.dropLast(1) else line
 }
 
 fun parseNativeServerWelcome(
