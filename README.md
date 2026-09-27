@@ -2,7 +2,7 @@
 
 Official companion application for **HELION**, the persistent, server-authoritative online science-fiction universe.
 
-> **DEVELOPMENT STATUS:** `DEMO / OFFLINE` uses `FakeCompanionApi`. `PRIVATE TEST` and `PRODUCTION` route to `RealCompanionApi`. The first verified real-server slice is implemented: a raw TLS 1.2+ status/compatibility probe that requires `WELCOME Helion/2`. Default builds have no TEST/Production host configured, and authenticated gameplay APIs are not connected yet.
+> **DEVELOPMENT STATUS:** `DEMO / OFFLINE` uses `FakeCompanionApi`. `PRIVATE TEST` and `PRODUCTION` route to `RealCompanionApi`. Configured real environments support verified raw TLS 1.2+ status/protocol checks plus scoped `profile.read` companion authentication and live native `PROFILE` reads. Default builds still have no TEST/Production host configured, and all other gameplay APIs remain unimplemented until individually verified.
 
 ---
 
@@ -13,6 +13,7 @@ Official companion application for **HELION**, the persistent, server-authoritat
 - [Commander Product Spec](docs/commander/HELION_COMMANDER_PRODUCT_SPEC.md)
 - [Server Integration Guide](docs/commander/HELION_COMMANDER_SERVER_INTEGRATION.md)
 - [Verified Native Status Contract](docs/commander/HELION_COMMANDER_NATIVE_STATUS_CONTRACT.md)
+- [Verified Companion Auth Contract](docs/commander/HELION_COMMANDER_COMPANION_AUTH_CONTRACT.md)
 
 ---
 
@@ -93,7 +94,7 @@ com.example.helion/
     - Compose and send messages through simulated server transport.
 11. **Environment Isolation & Offline Simulation:**
     - Runtime selector for `DEMO / OFFLINE`, `PRIVATE TEST`, and `PRODUCTION`, with separate cache/database and credential namespaces.
-    - `PRIVATE TEST` and `PRODUCTION` never silently use DEMO data. When a build configures a native endpoint, Commander can verify TLS trust and HELION protocol v2 status before any later gameplay integration.
+    - `PRIVATE TEST` and `PRODUCTION` never silently use DEMO data. When a build configures a native endpoint, Commander can verify TLS trust and HELION protocol v2 status. A paired scoped companion token additionally enables the verified live commander `PROFILE` read.
 
 ---
 

@@ -1,11 +1,11 @@
 # HELION Commander Developer Guide
 
-**Project:** HELION Commander  
-**Platform:** Android  
-**Language:** Kotlin  
-**UI:** Jetpack Compose  
-**Status:** Pre-server-integration alpha  
-**Current backend routing:** `DEMO -> FakeCompanionApi`; `PRIVATE_TEST/PRODUCTION -> RealCompanionApi` with optional verified native TLS status endpoints
+**Project:** HELION Commander
+**Platform:** Android
+**Language:** Kotlin
+**UI:** Jetpack Compose
+**Status:** Incremental native-server integration alpha
+**Current backend routing:** `DEMO -> FakeCompanionApi`; `PRIVATE_TEST/PRODUCTION -> RealCompanionApi` with verified native TLS status plus scoped `profile.read` authentication/PROFILE reads when configured and paired
 **Architecture:** HELION server-authoritative companion client
 
 ---
@@ -63,13 +63,13 @@ Environment selection
        ↓
 CompanionApiFactory / DelegatingCompanionApi
        ├── DEMO          -> FakeCompanionApi
-       ├── PRIVATE TEST  -> RealCompanionApi [native TLS status if configured]
-       └── PRODUCTION    -> RealCompanionApi [native TLS status if configured]
+       ├── PRIVATE TEST  -> RealCompanionApi [TLS status + scoped PROFILE if configured/paired]
+       └── PRODUCTION    -> RealCompanionApi [TLS status + scoped PROFILE if configured/paired]
 ```
 
 Each environment has a separate Room database and credential namespace. Repository DAO access and long-lived Room observers must rebind when the selected environment changes, and environment-scoped in-memory state must be cleared before target-environment data is loaded.
 
-The native server status/compatibility transport is implemented and verified against HELION protocol v2. A default build still has no TEST or Production host configured, and no authenticated gameplay API is implemented yet.
+The native server status/compatibility transport is implemented and verified against HELION protocol v2. Scoped `profile.read` companion authentication and the native commander `PROFILE` read are also implemented. A default build still has no TEST or Production host configured, and fleet/market/mission/UniNet/gameplay APIs are not yet connected.
 
 Do not present mock data as live server data.
 
@@ -433,20 +433,20 @@ HELION_PRIVATE_TEST_HOST / HELION_PRIVATE_TEST_PORT
 HELION_PRODUCTION_HOST   / HELION_PRODUCTION_PORT
 ```
 
-With no host configured, TEST/PRODUCTION remain `NOT CONFIGURED`. With a host configured, Commander may perform only the verified native TLS status probe. Selecting an environment never implies successful connectivity.
+With no host configured, TEST/PRODUCTION remain `NOT CONFIGURED`. With a host configured, Commander can perform the verified native TLS status probe. With a matching stored `profile.read` companion token, it can also authenticate and read the live native `PROFILE`. Selecting an environment never implies successful connectivity or authentication.
 
 ---
 
 ## 14. Real Server Integration Sequence
 
-The first step, native server status/compatibility probing, is implemented. Continue in this order:
+Status, scoped companion authentication, and the first commander summary read are implemented. Continue in this order:
 
 ```text
 SERVER STATUS [IMPLEMENTED]
       ↓
-AUTHENTICATION
+SCOPED COMPANION AUTH [IMPLEMENTED]
       ↓
-COMMANDER SUMMARY
+COMMANDER SUMMARY / PROFILE [IMPLEMENTED]
       ↓
 OWNED FLEET
       ↓
@@ -467,12 +467,15 @@ Do not begin with live markets, remote fitting, or other high-impact mutations.
 
 ## 15. Authentication Rules
 
-Future authorization should be:
+Verified native companion authorization is:
 
-- scoped
+- scoped (`profile.read` for this milestone)
 - revocable
-- expiring
-- environment-bound
+- expiring (30-day server lifetime)
+- environment-isolated in Commander storage
+- stored on Android as an AES-GCM ciphertext protected by AndroidKeyStore
+
+Commander never stores the HELION game password. Manual development pairing uses a server-issued `hc1...` companion bearer from `COMPANION ISSUE`.
 
 Never commit:
 

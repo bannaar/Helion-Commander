@@ -13,19 +13,25 @@ class DefaultCompanionApiFactory(
     val fakeApi: FakeCompanionApi = FakeCompanionApi(),
     private val privateTestEndpoint: ServerEndpoint? = null,
     private val productionEndpoint: ServerEndpoint? = null,
-    private val statusProbe: NativeServerStatusProbe = TlsNativeServerStatusProbe()
+    private val statusProbe: NativeServerStatusProbe = TlsNativeServerStatusProbe(),
+    private val credentialProvider: (ServerEnvironment) -> String? = { null },
+    private val commanderProfileClient: NativeCommanderProfileClient = TlsNativeCommanderProfileClient()
 ) : CompanionApiFactory {
 
     private val realTestApi = RealCompanionApi(
         environment = ServerEnvironment.PRIVATE_TEST,
         endpoint = privateTestEndpoint,
-        statusProbe = statusProbe
+        statusProbe = statusProbe,
+        credentialProvider = { credentialProvider(ServerEnvironment.PRIVATE_TEST) },
+        commanderProfileClient = commanderProfileClient
     )
 
     private val realProdApi = RealCompanionApi(
         environment = ServerEnvironment.PRODUCTION,
         endpoint = productionEndpoint,
-        statusProbe = statusProbe
+        statusProbe = statusProbe,
+        credentialProvider = { credentialProvider(ServerEnvironment.PRODUCTION) },
+        commanderProfileClient = commanderProfileClient
     )
 
     override fun getApi(environment: ServerEnvironment): CompanionApi = when (environment) {
