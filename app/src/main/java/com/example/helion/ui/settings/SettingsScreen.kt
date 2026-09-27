@@ -80,7 +80,7 @@ fun SettingsScreen(
             },
             text = {
                 Text(
-                    text = "You are selecting the persistent HELION Production target.\n\nTest assets, GSC, ships, progression, and developer state do not transfer.\n\nThis build is not connected to Production yet. Once a verified Production endpoint is configured, Production actions may affect persistent live state.",
+                    text = "You are selecting the persistent HELION Production target.\n\nTest assets, GSC, ships, progression, and developer state do not transfer.\n\nSelecting Production does not by itself prove a live connection. If a verified Production endpoint is configured, future supported Production actions may affect persistent live state.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = HelionTextSecondary
                 )
