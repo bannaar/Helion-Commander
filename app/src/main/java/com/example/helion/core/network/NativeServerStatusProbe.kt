@@ -9,6 +9,7 @@ import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
 import javax.net.ssl.SSLSocket
 import javax.net.ssl.SSLSocketFactory
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -33,12 +34,12 @@ class TlsNativeServerStatusProbe(
         environment: ServerEnvironment,
         endpoint: ServerEndpoint
     ): Result<ServerStatus> = withContext(Dispatchers.IO) {
-        runCatching {
+        try {
             val rawSocket = socketFactory.createSocket()
             val socket = rawSocket as? SSLSocket
                 ?: throw ServerUnavailableException("TLS socket factory did not create an SSL socket.")
 
-            socket.use { tlsSocket ->
+            val status = socket.use { tlsSocket ->
                 tlsSocket.soTimeout = readTimeoutMs
 
                 val allowedProtocols = listOf("TLSv1.3", "TLSv1.2")
@@ -66,6 +67,20 @@ class TlsNativeServerStatusProbe(
 
                 parseNativeServerWelcome(environment, welcome)
             }
+            Result.success(status)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (known: ServerProtocolMismatchException) {
+            Result.failure(known)
+        } catch (known: ServerUnavailableException) {
+            Result.failure(known)
+        } catch (error: Exception) {
+            Result.failure(
+                ServerUnavailableException(
+                    "Unable to verify HELION native TLS server at ${endpoint.displayAddress}.",
+                    error
+                )
+            )
         }
     }
 }
