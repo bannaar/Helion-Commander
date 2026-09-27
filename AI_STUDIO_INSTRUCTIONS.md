@@ -45,7 +45,7 @@ Riftspace is outside the 200-system count.
 
 ## Verified native transport facts
 
-Current HELION native-server status behavior is verified against `bannaar/Helion` `main` at `3b7fd52bb1fd36d6933eff0bbff35a3138c22568`:
+HELION native status behavior was verified at `3b7fd52bb1fd36d6933eff0bbff35a3138c22568`. Scoped companion authentication and PROFILE reads are verified against `bannaar/Helion` `main` at `23cf90b0b7bdd0996c513f610fab21dc9a4af2e0`:
 
 - raw TLS transport, TLS 1.2+ required;
 - default native port 4242;
@@ -54,6 +54,13 @@ Current HELION native-server status behavior is verified against `bannaar/Helion
 - no verified REST/WebSocket transport for Commander;
 - the greeting does not advertise a server software version or maintenance state;
 - `STATE` exists pre-auth but is not required for status probing.
+- `COMPANION ISSUE` creates a 30-day, revocable, `profile.read` bearer from a normal player-authenticated session.
+- `COMPANION AUTH <token>` authenticates a scoped companion connection.
+- `PROFILE` is the only newly integrated authenticated read in Commander.
+- Commander stores the bearer encrypted and never stores the player's game password.
+- The companion scope cannot create/login accounts or perform gameplay mutations.
+
+See `docs/commander/HELION_COMMANDER_COMPANION_AUTH_CONTRACT.md`.
 
 Do not replace these facts with assumptions from the proposed API document.
 
