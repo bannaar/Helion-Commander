@@ -2,7 +2,7 @@
 
 Official companion application for **HELION**, the persistent, server-authoritative online science-fiction universe.
 
-> **DEVELOPMENT STATUS:** This repository is a pre-server-integration Android prototype. `DEMO / OFFLINE` uses `FakeCompanionApi`. `PRIVATE TEST` and `PRODUCTION` route to `RealCompanionApi` targets that are currently **NOT CONFIGURED**. They never fall back to DEMO data.
+> **DEVELOPMENT STATUS:** `DEMO / OFFLINE` uses `FakeCompanionApi`. `PRIVATE TEST` and `PRODUCTION` route to `RealCompanionApi`. The first verified real-server slice is implemented: a raw TLS 1.2+ status/compatibility probe that requires `WELCOME Helion/2`. Default builds have no TEST/Production host configured, and authenticated gameplay APIs are not connected yet.
 
 ---
 
@@ -12,6 +12,7 @@ Official companion application for **HELION**, the persistent, server-authoritat
 - [User Guide](docs/commander/HELION_COMMANDER_USER_GUIDE.md)
 - [Commander Product Spec](docs/commander/HELION_COMMANDER_PRODUCT_SPEC.md)
 - [Server Integration Guide](docs/commander/HELION_COMMANDER_SERVER_INTEGRATION.md)
+- [Verified Native Status Contract](docs/commander/HELION_COMMANDER_NATIVE_STATUS_CONTRACT.md)
 
 ---
 
@@ -92,7 +93,7 @@ com.example.helion/
     - Compose and send messages through simulated server transport.
 11. **Environment Isolation & Offline Simulation:**
     - Runtime selector for `DEMO / OFFLINE`, `PRIVATE TEST`, and `PRODUCTION`, with separate cache/database and credential namespaces.
-    - `PRIVATE TEST` and `PRODUCTION` are explicitly NOT CONFIGURED until verified endpoints exist and never silently use DEMO data.
+    - `PRIVATE TEST` and `PRODUCTION` never silently use DEMO data. When a build configures a native endpoint, Commander can verify TLS trust and HELION protocol v2 status before any later gameplay integration.
 
 ---
 
