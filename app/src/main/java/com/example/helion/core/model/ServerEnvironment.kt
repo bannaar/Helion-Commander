@@ -16,13 +16,13 @@ enum class ServerEnvironment(
         id = "private_test",
         displayName = "PRIVATE TEST",
         badgeLabel = "TEST // PRIVATE TEST UNIVERSE",
-        description = "Target profile for the isolated private test universe (LAB-SEC-7). This build remains NOT CONFIGURED until a verified server endpoint is connected."
+        description = "Target profile for the isolated private test universe (LAB-SEC-7). Requires an explicitly configured native TLS endpoint."
     ),
     PRODUCTION(
         id = "production",
         displayName = "PRODUCTION",
         badgeLabel = "LIVE // PERSISTENT UNIVERSE",
-        description = "Target profile for the single persistent HELION universe. This build remains NOT CONFIGURED until a verified production endpoint is connected."
+        description = "Target profile for the single persistent HELION universe. Requires an explicitly configured native TLS endpoint."
     );
 
     companion object {
