@@ -143,10 +143,11 @@ fun SettingsScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     ServerEnvironment.values().forEach { env ->
                         val isSelected = state.currentServerEnvironment == env
-                        val configState = when (env) {
-                            ServerEnvironment.DEMO -> "CONFIGURED (LOCAL SIM)"
-                            ServerEnvironment.PRIVATE_TEST -> "NOT CONNECTED"
-                            ServerEnvironment.PRODUCTION -> "NOT CONNECTED"
+                        val profile = viewModel.profileFor(env)
+                        val configState = when {
+                            env == ServerEnvironment.DEMO -> "CONFIGURED (LOCAL SIM)"
+                            profile.isConfigured -> "CONFIGURED (NATIVE TLS)"
+                            else -> "NOT CONFIGURED"
                         }
                         Surface(
                             modifier = Modifier
@@ -188,7 +189,7 @@ fun SettingsScreen(
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = env.description,
+                                        text = profile.description,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = HelionTextSecondary
                                     )
@@ -248,8 +249,20 @@ fun SettingsScreen(
                         ) {
                             Column(modifier = Modifier.padding(10.dp)) {
                                 Text("SERVICE: ${status.serviceName}", style = MaterialTheme.typography.labelSmall, color = HelionHighSecGreen, fontWeight = FontWeight.Bold)
-                                Text("VERSION: ${status.serverVersion} • PROTOCOL: ${status.protocolVersion}", style = MaterialTheme.typography.bodySmall, color = HelionTextPrimary)
-                                Text("MAINTENANCE: ${if (status.maintenance) "YES (SUSPENDED)" else "NO (ACTIVE)"}", style = MaterialTheme.typography.bodySmall, color = HelionTextSecondary)
+                                Text(
+                                    "VERSION: ${status.serverVersion ?: "NOT ADVERTISED"} • PROTOCOL: ${status.protocolVersion}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = HelionTextPrimary
+                                )
+                                Text(
+                                    "MAINTENANCE: ${when (status.maintenance) {
+                                        true -> "YES"
+                                        false -> "NO"
+                                        null -> "NOT ADVERTISED"
+                                    }}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = HelionTextSecondary
+                                )
                                 if (status.message != null) {
                                     Text(status.message, style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
                                 }
@@ -269,7 +282,9 @@ fun SettingsScreen(
                                     color = HelionAmber
                                 )
                                 Text(
-                                    text = "Real ${state.currentServerEnvironment.displayName} companion API endpoint will be configured when the authoritative HELION server adapter is connected.",
+                                    text = state.serverProfile.endpoint?.let {
+                                        "Configured native TLS endpoint: ${it.displayAddress}. The probe requires a trusted certificate whose identity matches the configured host."
+                                    } ?: "No native TLS endpoint is configured for this environment.",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = HelionTextMuted
                                 )
@@ -390,7 +405,7 @@ fun SettingsScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Prototype companion client. Current builds use mock data until a verified HELION server adapter is connected.",
+                    text = "Prototype companion client. DEMO uses mock data. Native TLS status probing is implemented for configured TEST/PRODUCTION endpoints; gameplay APIs remain unimplemented until individually verified.",
                     style = MaterialTheme.typography.labelSmall,
                     color = HelionTextMuted
                 )
