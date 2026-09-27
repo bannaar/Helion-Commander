@@ -80,7 +80,7 @@ fun SettingsScreen(
             },
             text = {
                 Text(
-                    text = "You are connecting to the persistent HELION universe.\n\nTest assets, GSC, ships, progression, and developer state do not transfer.\n\nProduction actions may affect persistent live state.",
+                    text = "You are selecting the persistent HELION Production target.\n\nTest assets, GSC, ships, progression, and developer state do not transfer.\n\nThis build is not connected to Production yet. Once a verified Production endpoint is configured, Production actions may affect persistent live state.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = HelionTextSecondary
                 )
@@ -90,7 +90,7 @@ fun SettingsScreen(
                     onClick = { viewModel.confirmProductionSwitch() },
                     colors = ButtonDefaults.buttonColors(containerColor = HelionAmber, contentColor = HelionDeepGraphite)
                 ) {
-                    Text("CONNECT TO PRODUCTION", fontWeight = FontWeight.Bold)
+                    Text("SELECT PRODUCTION", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -134,7 +134,7 @@ fun SettingsScreen(
                 }
             ) {
                 Text(
-                    text = "Select the target universe profile. The active environment governs server validation, local cache isolation, and session authentication.",
+                    text = "Select the target universe profile. The active environment governs API routing, local cache isolation, and credential/session namespace.",
                     style = MaterialTheme.typography.bodySmall,
                     color = HelionTextSecondary
                 )
@@ -204,8 +204,16 @@ fun SettingsScreen(
         item {
             HelionCard(
                 title = "Server Connection & Status Probe",
-                badgeText = if (state.serverStatus != null) "ONLINE" else "NOT CONNECTED",
-                badgeColor = if (state.serverStatus != null) HelionHighSecGreen else HelionTextMuted,
+                badgeText = when {
+                    state.currentServerEnvironment == ServerEnvironment.DEMO && state.serverStatus != null -> "LOCAL SIM"
+                    state.serverStatus != null -> "ONLINE"
+                    else -> "NOT CONNECTED"
+                },
+                badgeColor = when {
+                    state.currentServerEnvironment == ServerEnvironment.DEMO && state.serverStatus != null -> HelionCyan
+                    state.serverStatus != null -> HelionHighSecGreen
+                    else -> HelionTextMuted
+                },
                 accentColor = HelionCyan
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -306,7 +314,7 @@ fun SettingsScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     NotificationToggleRow(
                         title = "Direct Comms Messages",
-                        subtitle = "Alert when another pilot sends direct encrypted comms",
+                        subtitle = "Alert when another pilot sends a direct comms message",
                         checked = state.notifyDMs,
                         onChecked = { viewModel.toggleDMs(it) }
                     )
