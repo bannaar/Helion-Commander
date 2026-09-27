@@ -5,7 +5,7 @@
 **Language:** Kotlin  
 **UI:** Jetpack Compose  
 **Status:** Pre-server-integration alpha  
-**Current backend routing:** `DEMO -> FakeCompanionApi`; `PRIVATE_TEST/PRODUCTION -> RealCompanionApi (NOT CONFIGURED)`  
+**Current backend routing:** `DEMO -> FakeCompanionApi`; `PRIVATE_TEST/PRODUCTION -> RealCompanionApi (NOT CONFIGURED)`
 **Architecture:** HELION server-authoritative companion client
 
 ---
