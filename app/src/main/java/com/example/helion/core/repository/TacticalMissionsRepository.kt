@@ -21,8 +21,12 @@ import org.json.JSONObject
 
 class TacticalMissionsRepository(
     private val api: CompanionApi,
-    private val missionDao: TacticalMissionDao
+    private val missionDaoProvider: () -> TacticalMissionDao
 ) {
+    constructor(api: CompanionApi, missionDao: TacticalMissionDao) : this(api, { missionDao })
+
+    private val missionDao: TacticalMissionDao
+        get() = missionDaoProvider()
     private val _missionsState = MutableStateFlow<List<TacticalMission>>(emptyList())
     val missionsState: StateFlow<List<TacticalMission>> = _missionsState.asStateFlow()
 
@@ -110,6 +114,10 @@ class TacticalMissionsRepository(
             current.add(mission)
             _missionsState.value = current
         }
+    }
+
+    fun clearEnvironmentState() {
+        _missionsState.value = emptyList()
     }
 
     // Room DB Flow mapping
