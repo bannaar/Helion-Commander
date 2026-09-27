@@ -1070,7 +1070,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
             "guild.notice.create",
             "guild.comms.write"
         ), // Notice: guild.member.remove or guild.role.manage not granted!
-        territories = emptyList() // No mock sovereignty claim until a dedicated Zero Space demo seed exists,
+        territories = emptyList(), // No mock sovereignty claim until a dedicated Zero Space demo seed exists
         notices = listOf(
             GuildNotice(
                 noticeId = "not-01",
@@ -1094,7 +1094,7 @@ class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
         members = listOf(
             GuildMember("mem-01", "bannaar", "Senior Pilot", "Aster Raptor", "Kepler", true, System.currentTimeMillis() - 864000000L),
             GuildMember("mem-02", "Kaelen-7", "Tactical Marshal", "Commonwealth Valiant", "Kepler", true, System.currentTimeMillis() - 2500000000L),
-            GuildMember("mem-03", "Astraea", "Logistics Lead", "Titan Mule", "Harrow", true, System.currentTimeMillis() - 1400000000L),
+            GuildMember("mem-03", "Astraea", "Logistics Lead", "Prototype Bulk Freighter", "Harrow", true, System.currentTimeMillis() - 1400000000L),
             GuildMember("mem-04", "Voss-Tracer", "Scout Recon", "Aster Raptor", "Aurelia", false, System.currentTimeMillis() - 3600000L)
         )
     )
