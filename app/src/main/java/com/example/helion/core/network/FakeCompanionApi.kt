@@ -46,13 +46,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.UUID
 
-class FakeCompanionApi : CompanionApi {
+class FakeCompanionApi : CompanionApi, DevelopmentSimulationApi {
 
     private val mutex = Mutex()
 
     private var activeEnvironment = HelionEnvironment.PRODUCTION
 
-    // Server authoritative state
+    // SIMULATED authoritative state for prototype/testing only
     private var commanderCredits: Long = 42_580L
     private var activeShipInstanceId = "ship-raptor-01"
     private var activeStationId = "sta-kepler-prime"
@@ -84,7 +84,7 @@ class FakeCompanionApi : CompanionApi {
         ModuleItem(
             moduleId = "mod-railgun-2",
             displayName = "Hyper-Velocity Railgun",
-            manufacturer = "Titan Forge Ordnance",
+            manufacturer = "Ironstar Forge Ordnance",
             category = ModuleSlotCategory.WEAPON_HARDPOINT,
             size = 2,
             grade = "B",
@@ -149,7 +149,7 @@ class FakeCompanionApi : CompanionApi {
         ModuleItem(
             moduleId = "mod-cargo-rack-3",
             displayName = "Reinforced Cargo Container 3E",
-            manufacturer = "Titan Forge Freight",
+            manufacturer = "Ironstar Forge Freight",
             category = ModuleSlotCategory.OPTIONAL_INTERNAL,
             size = 3,
             grade = "E",
@@ -202,8 +202,8 @@ class FakeCompanionApi : CompanionApi {
 
     val muleDefinition = ShipDefinition(
         hullId = "hull-titan-mule",
-        hullName = "Titan Mule",
-        manufacturer = "Titan Forge",
+        hullName = "Prototype Bulk Freighter",
+        manufacturer = "Ironstar Forge",
         shipClass = "Freighter",
         role = "Heavy Bulk Cargo & Ore Transport",
         baseMassTons = 120.0f,
@@ -531,22 +531,22 @@ class FakeCompanionApi : CompanionApi {
             "sys-aurelia" -> listOf(
                 CelestialBody(
                     id = "aur-1",
-                    name = "Aurelia Nexus (Shattered Throne)",
+                    name = "Aurelia Research World",
                     type = PlanetType.SHATTERED_WORLD,
                     orbitalRadiusAu = 1.30f,
                     radiusKm = 5900,
                     surfaceHazards = "0.0 Sovereign War Zone • Tachyon Anomalies",
                     miningYields = listOf(
-                        PlanetMiningYield("Raw Morphite Veins", "Precious Ore", 99, 1100, "Extreme", ResourceAbundance.PRISTINE),
+                        PlanetMiningYield("Exotic Metamaterial Veins", "Precious Ore", 99, 1100, "Extreme", ResourceAbundance.PRISTINE),
                         PlanetMiningYield("Antimatter Condensate", "Volatiles & Fuel", 97, 920, "Extreme", ResourceAbundance.PRISTINE),
-                        PlanetMiningYield("Tritanium Super-Clusters", "Heavy Metals", 95, 870, "Extreme", ResourceAbundance.PRISTINE)
+                        PlanetMiningYield("Dense Heavy-Metal Superclusters", "Heavy Metals", 95, 870, "Extreme", ResourceAbundance.PRISTINE)
                     ),
                     activeExtractionFacilities = 5,
                     surveyQualityPercentage = 95
                 ),
                 CelestialBody(
                     id = "aur-2",
-                    name = "Aurelia Sovereign Giant",
+                    name = "Aurelia Major",
                     type = PlanetType.GAS_GIANT,
                     orbitalRadiusAu = 5.80f,
                     radiusKm = 83000,
@@ -560,7 +560,7 @@ class FakeCompanionApi : CompanionApi {
                 ),
                 CelestialBody(
                     id = "aur-3",
-                    name = "Aurelia Cryo Fortress",
+                    name = "Aurelia Outer Ice Giant",
                     type = PlanetType.ICE_GIANT,
                     orbitalRadiusAu = 12.50f,
                     radiusKm = 28900,
@@ -856,29 +856,29 @@ class FakeCompanionApi : CompanionApi {
         "sys-aurelia" to SystemNode(
             systemId = "sys-aurelia",
             name = "Aurelia",
-            regionId = "reg-deep-null",
-            regionName = "Dark Horizon Expanse",
-            securityRating = 0.0f, // 0.0 NULL SEC!
-            threatLevel = ThreatLevel.EXTREME,
-            overallAbundance = ResourceAbundance.PRISTINE,
+            regionId = "reg-aurelian-core",
+            regionName = "Aurelian Core",
+            securityRating = 3.0f, // DEMO rating; authoritative server data will replace this seed
+            threatLevel = ThreatLevel.LOW,
+            overallAbundance = ResourceAbundance.MODERATE,
             resources = listOf(
-                SystemResource("Raw Morphite Veins", "Precious Ore", ResourceAbundance.PRISTINE, 98),
-                SystemResource("Antimatter Condensate", "Volatiles & Fuel", ResourceAbundance.PRISTINE, 95),
-                SystemResource("Tritanium Super-Clusters", "Heavy Metals", ResourceAbundance.PRISTINE, 94)
+                SystemResource("Scientific Survey Reserves", "Research Materials", ResourceAbundance.MODERATE, 62),
+                SystemResource("Industrial Volatiles", "Volatiles & Fuel", ResourceAbundance.MODERATE, 58),
+                SystemResource("Dense Heavy-Metal Deposits", "Heavy Metals", ResourceAbundance.MODERATE, 60)
             ),
-            asteroidBelts = 8,
-            celestialCount = 16,
-            threatDescription = "Lethal 0.0 Sovereign null-sec. Guild fleet dreadnoughts, automated pirate drone swarms, open warfare.",
-            resourceSummary = "Untouched pristine deep-space asteroid fields with immense wealth of exotic materials.",
-            sovereigntyType = SovereigntyType.PLAYER_GUILD,
-            sovereignId = "guild-iron-vanguard",
-            sovereignName = "Iron Vanguard [IVG]",
-            isCapital = false,
-            isCommerceHub = false,
+            asteroidBelts = 3,
+            celestialCount = 8,
+            threatDescription = "High-security Aurelian Synod center with strong civil and scientific infrastructure.",
+            resourceSummary = "Research, medicine, observation, and mature civil infrastructure dominate local activity.",
+            sovereigntyType = SovereigntyType.NPC_FACTION,
+            sovereignId = "fac-aurelian-synod",
+            sovereignName = "Aurelian Synod",
+            isCapital = true,
+            isCommerceHub = true,
             isBorderGateway = false,
             mapX = 0.45f,
             mapY = 0.85f,
-            primaryStationName = "Vanguard Null Fortress",
+            primaryStationName = "Aurelia Central",
             connections = listOf(
                 StarLaneConnection("sys-cinder", 13.0f, StarLaneType.BACKWATER),
                 StarLaneConnection("sys-meridian", 16.0f, StarLaneType.BACKWATER)
@@ -887,10 +887,10 @@ class FakeCompanionApi : CompanionApi {
         ),
         "sys-concordia" to SystemNode(
             systemId = "sys-concordia",
-            name = "Concordia",
-            regionId = "reg-concordat-core",
-            regionName = "Concordat Expanse",
-            securityRating = 4.5f,
+            name = "Crownspire",
+            regionId = "reg-concordat-core", // legacy internal id retained in mock seed
+            regionName = "Commonwealth Core",
+            securityRating = 4.6f,
             threatLevel = ThreatLevel.MINIMAL,
             overallAbundance = ResourceAbundance.DEPLETED,
             resources = listOf(
@@ -899,17 +899,17 @@ class FakeCompanionApi : CompanionApi {
             ),
             asteroidBelts = 1,
             celestialCount = 6,
-            threatDescription = "Maximum security national core. Concordat high fleet flagships orbiting all gates.",
+            threatDescription = "High-security Commonwealth capital region with dense civil and naval infrastructure.",
             resourceSummary = "Centuries of heavy urban extraction have depleted natural crusts; primary hub for high-tech.",
             sovereigntyType = SovereigntyType.NPC_FACTION,
             sovereignId = "fac-concordat",
-            sovereignName = "Concordat of Worlds",
+            sovereignName = "Helion Commonwealth",
             isCapital = true,
             isCommerceHub = true,
             isBorderGateway = false,
             mapX = 0.75f,
             mapY = 0.35f,
-            primaryStationName = "Concordia Prime Ring",
+            primaryStationName = "Crownspire Central",
             connections = listOf(
                 StarLaneConnection("sys-crossroads", 10.4f, StarLaneType.REGIONAL_PRIMARY),
                 StarLaneConnection("sys-vantage", 15.0f, StarLaneType.SECONDARY),
@@ -1015,12 +1015,12 @@ class FakeCompanionApi : CompanionApi {
         MarketItem("com-bio-rations", "Nutrient Paste", CommodityCategory.CONSUMER, "crates", 185L, 160L, 350, 2400, "sta-cinder-smuggler", "Cinder Smuggler Port", "sys-cinder", "Cinder", "reg-outer-rim", System.currentTimeMillis(), 20)
     )
 
-    // GalNet Articles
+    // UniNet articles (legacy internal GalNet model names retained for compatibility)
     private val galNetArticles = mutableListOf(
         GalNetArticle(
             articleId = "art-001",
             headline = "Starlane Disruption Averted at Vantage Gateway",
-            summary = "Solari Directorate naval patrols intercepted unauthorized electronic countermeasures near the Vantage jump beacon.",
+            summary = "Solar Directorate naval patrols intercepted unauthorized electronic countermeasures near the Vantage jump beacon.",
             body = "VANTAGE SYSTEM - Commercial haulers experienced momentary telemetry latency this morning following an attempted interdiction of an automated cargo convoy. Directorate heavy patrol vessels engaged unidentified hostiles near Gate 4, dispersing pirate raiders without structural casualties. Regional security ratings remain steady at +0.8, with authorities cautioning unescorted traders traveling beyond the buffer zone.",
             category = GalNetChannel.SECURITY,
             publishedAtEpoch = System.currentTimeMillis() - 3600000L * 2,
@@ -1031,8 +1031,8 @@ class FakeCompanionApi : CompanionApi {
         GalNetArticle(
             articleId = "art-002",
             headline = "Refined Titanium Surges Across Crossroads Markets",
-            summary = "Industrial expansion in the neutral buffer zone has driven titanium demand to record highs of 785 CR/ton.",
-            body = "CROSSROADS CITADEL - The Commerce Guild reported a 14% week-over-week spike in metal intake. Orbital shipwrights preparing new exploration escorts are paying premium margins for high-purity titanium. Traders operating out of Kepler have reported gross arbitrage spreads exceeding 140 CR per haul.",
+            summary = "Industrial expansion in the neutral buffer zone has driven titanium demand to record highs of 785 GSC/ton.",
+            body = "CROSSROADS CITADEL - The Commerce Guild reported a 14% week-over-week spike in metal intake. Orbital shipwrights preparing new exploration escorts are paying premium margins for high-purity titanium. Traders operating out of Kepler have reported gross arbitrage spreads exceeding 140 GSC per haul.",
             category = GalNetChannel.ECONOMY,
             publishedAtEpoch = System.currentTimeMillis() - 3600000L * 5,
             importance = "STANDARD",
@@ -1041,9 +1041,9 @@ class FakeCompanionApi : CompanionApi {
         ),
         GalNetArticle(
             articleId = "art-003",
-            headline = "Iron Vanguard Fortifies 0.0 Outpost in Aurelia",
-            summary = "Player sovereign entity reports completion of a Tier-3 Star Fortress in nullsec territory.",
-            body = "AURELIA DEEP EXPENSE - Guild engineers have anchored a modular sovereign citadel over Aurelia VI. The fortress provides automated repair gantry access to allied commanders and levies zero tariffs on cooperative resource refined goods.",
+            headline = "Iron Vanguard Opens Kepler Logistics Relay",
+            summary = "The independent Guild reports expanded repair and convoy services in the Kepler frontier.",
+            body = "KEPLER - Iron Vanguard engineers have opened a member logistics relay supporting repairs, convoy staging, and shared freight operations. The facility does not confer system sovereignty.",
             category = GalNetChannel.COMMUNITY,
             publishedAtEpoch = System.currentTimeMillis() - 3600000L * 12,
             importance = "CRITICAL",
@@ -1057,22 +1057,20 @@ class FakeCompanionApi : CompanionApi {
         guildId = "guild-iron-vanguard",
         name = "Iron Vanguard",
         ticker = "IVG",
-        description = "Industrial, combat escort, and null-sec sovereign development collective. Dedicated to safe trade lanes and mutual defense.",
+        description = "Industrial and combat-escort Guild focused on frontier logistics, mutual defense, and future Zero Space operations.",
         emblemIcon = "shield_chevron",
         memberCount = 142,
         allianceId = "all-helios-compact",
         allianceName = "Helios Compact Alliance",
-        homeSystemId = "sys-aurelia",
-        homeSystemName = "Aurelia",
+        homeSystemId = "sys-kepler",
+        homeSystemName = "Kepler",
         grantedPermissions = setOf(
             "guild.read",
             "guild.members.read",
             "guild.notice.create",
             "guild.comms.write"
         ), // Notice: guild.member.remove or guild.role.manage not granted!
-        territories = listOf(
-            GuildTerritory("sys-aurelia", "Aurelia", 0.0f, "Sovereign Control", 450_000L)
-        ),
+        territories = emptyList() // No mock sovereignty claim until a dedicated Zero Space demo seed exists,
         notices = listOf(
             GuildNotice(
                 noticeId = "not-01",
@@ -1085,7 +1083,7 @@ class FakeCompanionApi : CompanionApi {
             ),
             GuildNotice(
                 noticeId = "not-02",
-                title = "Aurelia Citadel Gantry Upgrades Active",
+                title = "Kepler Relay Gantry Upgrades Active",
                 body = "Repairs and re-arming at Vanguard Outpost are now 50% discounted for all verified Vanguard members.",
                 authorName = "Quartermaster Thorne",
                 authorRole = "Logistics Director",
@@ -1153,13 +1151,13 @@ class FakeCompanionApi : CompanionApi {
                 currentStationName = "Kepler Prime Orbital",
                 activeShipId = activeShipInstanceId,
                 factionStandings = listOf(
-                    FactionStanding("fac-solari-dir", "Solari Directorate", 6.8f, "Honored Vanguard"),
-                    FactionStanding("fac-free-coalition", "Free Star Coalition", 3.2f, "Trusted Partner"),
-                    FactionStanding("fac-concordat", "Concordat of Worlds", 1.4f, "Recognized Trader"),
+                    FactionStanding("fac-solari-dir", "Solar Directorate", 6.8f, "Honored Vanguard"),
+                    FactionStanding("fac-free-coalition", "Free Systems Compact", 3.2f, "Trusted Partner"),
+                    FactionStanding("fac-concordat", "Helion Commonwealth", 1.4f, "Recognized Trader"),
                     FactionStanding("fac-outer-syndicate", "Outer Rim Syndicate", -4.2f, "Hostile Contact")
                 ),
                 licenses = listOf(
-                    CommanderLicense("lic-deep-space", "Deep Space Navigation Endorsement", "Solari Navy", true),
+                    CommanderLicense("lic-deep-space", "Deep Space Navigation Endorsement", "Solar Directorate Navy", true),
                     CommanderLicense("lic-heavy-ord", "Class-3 Heavy Munitions Permit", "Directorate Ordnance Bureau", true),
                     CommanderLicense("lic-free-trade", "Free Coalition Commercial Passport", "Crossroads Trade Authority", true)
                 ),
@@ -1254,7 +1252,7 @@ class FakeCompanionApi : CompanionApi {
 
         // Validate credits
         if (commanderCredits < totalRefitCost) {
-            return Result.failure(Exception("Insufficient credits: Refit requires $totalRefitCost CR, but balance is $commanderCredits CR."))
+            return Result.failure(Exception("Insufficient GSC: Refit requires $totalRefitCost GSC, but balance is $commanderCredits GSC."))
         }
 
         commanderCredits -= totalRefitCost
@@ -1365,7 +1363,7 @@ class FakeCompanionApi : CompanionApi {
 
             val totalCost = item.buyPrice * request.quantity
             if (commanderCredits < totalCost) {
-                return Result.failure(Exception("Transaction declined: Insufficient commander balance. Total required: $totalCost CR, Available: $commanderCredits CR."))
+                return Result.failure(Exception("Transaction declined: Insufficient commander balance. Total required: $totalCost GSC, Available: $commanderCredits GSC."))
             }
 
             // Validate cargo space
@@ -1804,7 +1802,7 @@ class FakeCompanionApi : CompanionApi {
                 celestialBodyName = "Crossroads Gateway Grid",
                 beaconCode = "GATE-CRS-01",
                 coordinates = "X: +1.12 AU, Y: +8.4 AU, Z: +0.2 AU",
-                securityRating = 0.7f,
+                securityRating = 0.8f,
                 distanceLy = 19.6f,
                 jumpCount = 2
             ),
@@ -1823,7 +1821,7 @@ class FakeCompanionApi : CompanionApi {
                         celestialBodyName = "Vantage Starlane Gate",
                         beaconCode = "GATE-VAN-01",
                         coordinates = "X: +0.88 AU, Y: +0.0 AU, Z: +0.0 AU",
-                        securityRating = 0.7f,
+                        securityRating = 0.8f,
                         distanceLy = 11.2f,
                         jumpCount = 1
                     ),
@@ -1843,7 +1841,7 @@ class FakeCompanionApi : CompanionApi {
                         celestialBodyName = "Crossroads Inbound Vector",
                         beaconCode = "CRS-INBOUND",
                         coordinates = "X: +2.10 AU, Y: +3.2 AU, Z: -0.1 AU",
-                        securityRating = 0.7f,
+                        securityRating = 0.8f,
                         distanceLy = 11.2f,
                         jumpCount = 1
                     ),
@@ -1863,7 +1861,7 @@ class FakeCompanionApi : CompanionApi {
                         celestialBodyName = "Crossroads Outskirts",
                         beaconCode = "RADAR-CRS-08",
                         coordinates = "X: +1.12 AU, Y: +8.4 AU, Z: +0.2 AU",
-                        securityRating = 0.7f,
+                        securityRating = 0.8f,
                         distanceLy = 19.6f,
                         jumpCount = 2
                     ),
@@ -1890,8 +1888,8 @@ class FakeCompanionApi : CompanionApi {
             bonusRewardItem = "Experimental Cloaking Baffle",
             primaryLocation = LocationMarker(
                 systemId = "sys-aurelia",
-                systemName = "Aurelia Nexus",
-                celestialBodyName = "Aurelia Nexus (Shattered Throne)",
+                systemName = "Aurelia",
+                celestialBodyName = "Aurelia Research World",
                 beaconCode = "ANOM-AUR-00",
                 coordinates = "X: +1.30 AU, Y: -14.2 AU, Z: -9.8 AU",
                 securityRating = 0.0f,
@@ -1909,8 +1907,8 @@ class FakeCompanionApi : CompanionApi {
                     unit = "Core Reached",
                     locationMarker = LocationMarker(
                         systemId = "sys-aurelia",
-                        systemName = "Aurelia Nexus",
-                        celestialBodyName = "Shattered Core Fragment B",
+                        systemName = "Aurelia",
+                        celestialBodyName = "Outer Survey Site B",
                         beaconCode = "ANOM-AUR-00",
                         coordinates = "X: +1.30 AU, Y: -14.2 AU, Z: -9.8 AU",
                         securityRating = 0.0f,
@@ -1928,7 +1926,7 @@ class FakeCompanionApi : CompanionApi {
                     unit = "Cores Extracted",
                     locationMarker = LocationMarker(
                         systemId = "sys-aurelia",
-                        systemName = "Aurelia Nexus",
+                        systemName = "Aurelia",
                         celestialBodyName = "Sub-Surface Research Facility",
                         beaconCode = "VAULT-AUR-X",
                         coordinates = "X: +1.32 AU, Y: -14.0 AU, Z: -9.6 AU",

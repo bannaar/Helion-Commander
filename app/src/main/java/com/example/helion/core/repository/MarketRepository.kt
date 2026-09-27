@@ -9,6 +9,7 @@ import com.example.helion.core.model.MarketItem
 import com.example.helion.core.model.MarketTransactionRequest
 import com.example.helion.core.model.MarketTransactionResult
 import com.example.helion.core.network.CompanionApi
+import com.example.helion.core.network.DevelopmentSimulationApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,7 +44,9 @@ class MarketRepository(
         newSellPrice: Long,
         stationId: String? = null
     ): Result<MarketItem> {
-        val res = api.updateCommodityPrice(commodityId, newBuyPrice, newSellPrice, stationId)
+        val simulationApi = api as? DevelopmentSimulationApi
+            ?: return Result.failure(UnsupportedOperationException("Market-price mutation is available only in development simulation."))
+        val res = simulationApi.updateCommodityPrice(commodityId, newBuyPrice, newSellPrice, stationId)
         res.onSuccess {
             refreshLocalMarket()
             refreshRegionalMarkets()

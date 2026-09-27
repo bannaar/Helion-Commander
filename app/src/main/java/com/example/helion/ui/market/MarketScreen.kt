@@ -303,7 +303,7 @@ fun MarketScreen(
                     ) {
                         Text(text = "TOTAL ORDER AMOUNT:", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
                         Text(
-                            text = "${numberFormat.format(totalCost)} CR",
+                            text = "${numberFormat.format(totalCost)} GSC",
                             style = MaterialTheme.typography.headlineSmall,
                             color = if (tradeIsBuy) HelionAmber else HelionHighSecGreen,
                             fontWeight = FontWeight.Bold
@@ -362,7 +362,7 @@ fun MarketScreen(
                 Column {
                     Text(text = "SERVER TX ID: ${tx.transactionId}", style = MaterialTheme.typography.labelSmall, color = HelionCyan)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Authoritative Balance: ${numberFormat.format(tx.authoritativeCredits)} CR", style = MaterialTheme.typography.bodyMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
+                    Text(text = "Authoritative Balance: ${numberFormat.format(tx.authoritativeCredits)} GSC", style = MaterialTheme.typography.bodyMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
                     Text(text = "Authoritative Ship Cargo: ${tx.authoritativeCargoUnits} tons", style = MaterialTheme.typography.bodySmall, color = HelionTextPrimary)
                     Text(text = "Updated Station Stock: ${tx.authoritativeStock} units", style = MaterialTheme.typography.bodySmall, color = HelionTextSecondary)
                 }
@@ -506,7 +506,7 @@ fun LocalMarketContent(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = "${if (existingAlert.isTriggered) "TARGET HIT" else "ALERT ARMED"}: ${if (existingAlert.isBuyPrice) "Buy" else "Sell"} $condSymbol ${existingAlert.targetPrice} CR",
+                                            text = "${if (existingAlert.isTriggered) "TARGET HIT" else "ALERT ARMED"}: ${if (existingAlert.isBuyPrice) "Buy" else "Sell"} $condSymbol ${existingAlert.targetPrice} GSC",
                                             style = MaterialTheme.typography.labelSmall,
                                             color = if (existingAlert.isTriggered) HelionHighSecGreen else HelionAmber,
                                             fontSize = 9.sp,
@@ -519,7 +519,7 @@ fun LocalMarketContent(
 
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
-                                text = "${numberFormat.format(item.buyPrice)} CR",
+                                text = "${numberFormat.format(item.buyPrice)} GSC",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = HelionAmber,
                                 fontWeight = FontWeight.Bold
@@ -532,7 +532,7 @@ fun LocalMarketContent(
                                     modifier = Modifier.size(12.dp)
                                 )
                                 Text(
-                                    text = "${if (item.priceTrendDelta >= 0) "+" else ""}${item.priceTrendDelta} CR",
+                                    text = "${if (item.priceTrendDelta >= 0) "+" else ""}${item.priceTrendDelta} GSC",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = if (item.priceTrendDelta >= 0) HelionHighSecGreen else HelionDangerRed
                                 )
@@ -548,7 +548,7 @@ fun LocalMarketContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Stock: ${item.stockUnits} ${item.unit} • Sell: ${numberFormat.format(item.sellPrice)} CR",
+                            text = "Stock: ${item.stockUnits} ${item.unit} • Sell: ${numberFormat.format(item.sellPrice)} GSC",
                             style = MaterialTheme.typography.bodySmall,
                             color = HelionTextMuted
                         )
@@ -614,7 +614,7 @@ fun PriceArbitrageContent(
             ) {
                 Column {
                     Text(
-                        text = "Comparing buy price at Kepler (${selected?.buyPrice ?: 0} CR) against all known regional station sell rates.",
+                        text = "Comparing buy price at Kepler (${selected?.buyPrice ?: 0} GSC) against all known regional station sell rates.",
                         style = MaterialTheme.typography.bodySmall,
                         color = HelionTextSecondary
                     )
@@ -683,12 +683,12 @@ fun PriceArbitrageContent(
                     ) {
                         Column {
                             Text(text = "STATION BUY RATE", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
-                            Text(text = "${numberFormat.format(comp.sellPrice)} CR", style = MaterialTheme.typography.titleMedium, color = HelionTextPrimary, fontWeight = FontWeight.Bold)
+                            Text(text = "${numberFormat.format(comp.sellPrice)} GSC", style = MaterialTheme.typography.titleMedium, color = HelionTextPrimary, fontWeight = FontWeight.Bold)
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(text = "MARGIN / TON", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
                             Text(
-                                text = "${if (comp.estimatedGrossMarginPerTon >= 0) "+" else ""}${comp.estimatedGrossMarginPerTon} CR",
+                                text = "${if (comp.estimatedGrossMarginPerTon >= 0) "+" else ""}${comp.estimatedGrossMarginPerTon} GSC",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = if (comp.estimatedGrossMarginPerTon >= 0) HelionHighSecGreen else HelionDangerRed,
                                 fontWeight = FontWeight.Bold
@@ -697,7 +697,7 @@ fun PriceArbitrageContent(
                         Column(horizontalAlignment = Alignment.End) {
                             Text(text = "PROFIT (16t)", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
                             Text(
-                                text = "${numberFormat.format(comp.estimatedCargoProfit)} CR",
+                                text = "${numberFormat.format(comp.estimatedCargoProfit)} GSC",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = HelionAmber,
                                 fontWeight = FontWeight.Bold
@@ -752,7 +752,7 @@ fun MarketWatchlistContent(
                         Text(text = item.displayName, style = MaterialTheme.typography.titleLarge, color = HelionTextPrimary, fontWeight = FontWeight.Bold)
                         Text(text = item.categoryName, style = MaterialTheme.typography.bodySmall, color = HelionCyan)
                     }
-                    Text(text = "Target Buy: ${item.targetBuyPrice} CR", style = MaterialTheme.typography.labelMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
+                    Text(text = "Target Buy: ${item.targetBuyPrice} GSC", style = MaterialTheme.typography.labelMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -817,11 +817,11 @@ fun TradeCalculatorContent(
                     ) {
                         Column {
                             Text(text = "CAPITAL REQUIRED", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
-                            Text(text = "${numberFormat.format(purchaseTotal)} CR", style = MaterialTheme.typography.titleMedium, color = HelionTextPrimary, fontWeight = FontWeight.Bold)
+                            Text(text = "${numberFormat.format(purchaseTotal)} GSC", style = MaterialTheme.typography.titleMedium, color = HelionTextPrimary, fontWeight = FontWeight.Bold)
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text(text = "PROJECTED PROFIT", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
-                            Text(text = "${numberFormat.format(netProfit)} CR", style = MaterialTheme.typography.headlineSmall, color = HelionHighSecGreen, fontWeight = FontWeight.Bold)
+                            Text(text = "${numberFormat.format(netProfit)} GSC", style = MaterialTheme.typography.headlineSmall, color = HelionHighSecGreen, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -964,7 +964,7 @@ fun PriceAlertsContent(
                                 ) {
                                     Icon(Icons.Default.AddAlert, contentDescription = null, tint = HelionCyan, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Set Alert for ${item.displayName} (Current: ${item.buyPrice} CR)", color = HelionCyan, style = MaterialTheme.typography.labelSmall)
+                                    Text("Set Alert for ${item.displayName} (Current: ${item.buyPrice} GSC)", color = HelionCyan, style = MaterialTheme.typography.labelSmall)
                                 }
                             }
                         }
@@ -1072,16 +1072,16 @@ fun PriceAlertsContent(
                             ) {
                                 Column {
                                     Text("TARGET THRESHOLD", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
-                                    Text("$conditionLabel ${numberFormat.format(alert.targetPrice)} CR", style = MaterialTheme.typography.titleMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
+                                    Text("$conditionLabel ${numberFormat.format(alert.targetPrice)} GSC", style = MaterialTheme.typography.titleMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text("CURRENT PRICE", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
-                                    Text("${numberFormat.format(currentPrice)} CR", style = MaterialTheme.typography.titleMedium, color = HelionTextPrimary, fontWeight = FontWeight.Bold)
+                                    Text("${numberFormat.format(currentPrice)} GSC", style = MaterialTheme.typography.titleMedium, color = HelionTextPrimary, fontWeight = FontWeight.Bold)
                                 }
                                 Column(horizontalAlignment = Alignment.End) {
                                     Text("STATUS", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
                                     Text(
-                                        text = if (alert.isTriggered) "TARGET HIT" else if (alert.isActive) "${kotlin.math.abs(priceDiff)} CR away" else "PAUSED",
+                                        text = if (alert.isTriggered) "TARGET HIT" else if (alert.isActive) "${kotlin.math.abs(priceDiff)} GSC away" else "PAUSED",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = if (alert.isTriggered) HelionHighSecGreen else if (alert.isActive) HelionCyan else HelionTextMuted,
                                         fontWeight = FontWeight.Bold
@@ -1105,7 +1105,7 @@ fun PriceAlertsContent(
                                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HelionHighSecGreen, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = "Target breached at ${numberFormat.format(currentPrice)} CR! Device notification triggered.",
+                                        text = "Target breached at ${numberFormat.format(currentPrice)} GSC! Device notification triggered.",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = HelionHighSecGreen,
                                         fontSize = 10.sp
@@ -1196,11 +1196,11 @@ fun SetPriceThresholdDialog(
                     ) {
                         Column {
                             Text(text = "CURRENT BUY PRICE", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
-                            Text(text = "${commodity.buyPrice} CR", style = MaterialTheme.typography.titleMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
+                            Text(text = "${commodity.buyPrice} GSC", style = MaterialTheme.typography.titleMedium, color = HelionAmber, fontWeight = FontWeight.Bold)
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text(text = "CURRENT SELL RATE", style = MaterialTheme.typography.labelSmall, color = HelionTextMuted)
-                            Text(text = "${commodity.sellPrice} CR", style = MaterialTheme.typography.titleMedium, color = HelionHighSecGreen, fontWeight = FontWeight.Bold)
+                            Text(text = "${commodity.sellPrice} GSC", style = MaterialTheme.typography.titleMedium, color = HelionHighSecGreen, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

@@ -281,7 +281,7 @@ class MarketViewModel(private val container: HelionAppContainer) : ViewModel() {
             container.marketRepository.insertOrUpdatePriceAlert(alert)
             _uiState.value = _uiState.value.copy(
                 configuringAlertCommodity = null,
-                actionSuccessBanner = "PRICE ALERT ARMED: Target ${targetPrice} CR set for ${commodity.displayName}."
+                actionSuccessBanner = "PRICE ALERT ARMED: Target ${targetPrice} GSC set for ${commodity.displayName}."
             )
 
             // Immediately evaluate to check if it's already at or beyond threshold
@@ -299,7 +299,7 @@ class MarketViewModel(private val container: HelionAppContainer) : ViewModel() {
             if (newActive) {
                 container.notificationManager.resetDeduplicationForAlert(alert.alertId)
                 _uiState.value = _uiState.value.copy(
-                    actionSuccessBanner = "Alert enabled for ${alert.displayName} (${alert.targetPrice} CR)."
+                    actionSuccessBanner = "Alert enabled for ${alert.displayName} (${alert.targetPrice} GSC)."
                 )
             } else {
                 _uiState.value = _uiState.value.copy(
@@ -365,7 +365,7 @@ class MarketViewModel(private val container: HelionAppContainer) : ViewModel() {
             val newBuyPrice = if (alert.isBuyPrice) simulatedPrice else simulatedPrice + 30
             val newSellPrice = if (!alert.isBuyPrice) simulatedPrice else simulatedPrice - 30
 
-            // Mutate commodity price in fake API
+            // Development-only: mutate mock commodity price to exercise alert behavior
             container.marketRepository.updateCommodityPrice(
                 commodityId = alert.commodityId,
                 newBuyPrice = newBuyPrice,
@@ -377,7 +377,7 @@ class MarketViewModel(private val container: HelionAppContainer) : ViewModel() {
             container.notificationManager.resetDeduplicationForAlert(alert.alertId)
 
             _uiState.value = _uiState.value.copy(
-                actionSuccessBanner = "MARKET FLUX SIMULATED: ${alert.displayName} price moved to $simulatedPrice CR! Device notification triggered."
+                actionSuccessBanner = "MARKET FLUX SIMULATED: ${alert.displayName} price moved to $simulatedPrice GSC! Device notification triggered."
             )
 
             // Refresh market data and evaluate

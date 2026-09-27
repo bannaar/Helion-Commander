@@ -5,6 +5,7 @@ import com.example.helion.core.model.MarketTransactionRequest
 import com.example.helion.core.model.ModuleSlotCategory
 import com.example.helion.core.model.RouteOptimizationMode
 import com.example.helion.core.model.SecurityClass
+import com.example.helion.core.model.SovereigntyType
 import com.example.helion.core.navigation.GalaxyRouter
 import com.example.helion.core.network.FakeCompanionApi
 import kotlinx.coroutines.runBlocking
@@ -50,10 +51,10 @@ class HelionCompanionTests {
     }
 
     @Test
-    fun testGalaxyRouterAvoidLowSecAndNullSec() = runBlocking {
+    fun testGalaxyRouterAvoidLowSecAndZeroSpace() = runBlocking {
         val systems = api.getGalaxySystems().getOrThrow()
 
-        // Cinder is low-sec (-2.4), Aurelia is 0.0 null-sec
+        // Cinder is low security. Build a temporary 0.0 copy to exercise Zero Space routing without corrupting Aurelia canon.
         // Under HIGH_SEC_ONLY, routing to Cinder should be prohibited
         val routeToLowSec = GalaxyRouter.findRoute(
             originId = "sys-kepler",
@@ -63,13 +64,19 @@ class HelionCompanionTests {
         )
         assertNull("Route to low sec should not be possible under HIGH_SEC_ONLY", routeToLowSec)
 
-        val routeToNullSec = GalaxyRouter.findRoute(
+        val zeroSpaceSystems = systems.toMutableMap()
+        val aurelia = systems.getValue("sys-aurelia")
+        zeroSpaceSystems["sys-aurelia"] = aurelia.copy(
+            securityRating = 0.0f,
+            securityClass = SecurityClass.NULL_SECURITY
+        )
+        val routeToZeroSpace = GalaxyRouter.findRoute(
             originId = "sys-kepler",
             destinationId = "sys-aurelia",
-            allSystems = systems,
+            allSystems = zeroSpaceSystems,
             mode = RouteOptimizationMode.AVOID_NULLSEC
         )
-        assertNull("Route to null sec should not be possible under AVOID_NULLSEC", routeToNullSec)
+        assertNull("Route to Zero Space should not be possible under the legacy AVOID_NULLSEC identifier", routeToZeroSpace)
     }
 
     @Test
@@ -79,7 +86,7 @@ class HelionCompanionTests {
             commanderId = "cmd-bannaar",
             currentStationId = "sta-kepler-prime",
             commodityId = "com-refined-metals",
-            quantity = 99999, // Way more than stock/credits
+            quantity = 99999, // Way more than stock/GSC
             isBuyAction = true
         )
 
@@ -142,15 +149,12 @@ class HelionCompanionTests {
         assertTrue("Gas giant yield should exceed 80%", volatileYield!!.yieldPercentage >= 80)
         assertTrue("Gas giant should have tons/hr rate", volatileYield.estimatedTonsPerHour > 500)
 
-        // Check 0.0 Null Sec system (Aurelia) for pristine high-end mining
+        // Aurelia is a major Aurelian Synod center, not ordinary 0.0 territory.
         val aurelia = systems["sys-aurelia"]
         assertNotNull(aurelia)
-        val shatteredWorld = aurelia!!.celestialBodies.find { it.type == com.example.helion.core.model.PlanetType.SHATTERED_WORLD }
-        assertNotNull("Aurelia should contain shattered world with morphite", shatteredWorld)
-        val morphiteYield = shatteredWorld!!.miningYields.find { it.resourceName.contains("Morphite") }
-        assertNotNull(morphiteYield)
-        assertEquals(com.example.helion.core.model.ResourceAbundance.PRISTINE, morphiteYield!!.abundance)
-        assertTrue(morphiteYield.yieldPercentage >= 95)
+        assertEquals(SecurityClass.HIGH_SECURITY, aurelia!!.securityClass)
+        assertEquals(SovereigntyType.NPC_FACTION, aurelia.sovereigntyType)
+        assertEquals("Aurelian Synod", aurelia.sovereignName)
     }
 
     @Test
@@ -216,7 +220,7 @@ class HelionCompanionTests {
         val currentWeek = metrics.weeklyRecords.find { it.isCurrentWeek }
         assertNotNull("Current week record should exist", currentWeek)
         assertTrue("Completed count should be positive", currentWeek!!.completedCount > 0)
-        assertTrue("Credits earned should be positive", currentWeek.creditsEarned > 0L)
+        assertTrue("GSC earned should be positive", currentWeek.creditsEarned > 0L)
         assertTrue("Top operating ship should not be empty", currentWeek.topShip.isNotEmpty())
     }
 
