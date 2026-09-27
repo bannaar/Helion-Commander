@@ -223,7 +223,7 @@ class TacticalMissionsViewModel(
                 // Refresh commander to show updated credits
                 container.commanderRepository.refreshCommanderProfile()
                 _uiState.value = _uiState.value.copy(
-                    actionBannerMessage = "BOUNTY CLAIMED: +${updated.creditReward} Credits & +${updated.standingReward} Standing added to Commander account!",
+                    actionBannerMessage = "BOUNTY CLAIMED: +${updated.creditReward} GSC & +${updated.standingReward} Standing added to Commander account!",
                     selectedMission = if (_uiState.value.selectedMission?.id == missionId) updated else _uiState.value.selectedMission
                 )
             }
