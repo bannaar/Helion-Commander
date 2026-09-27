@@ -6,6 +6,15 @@ Official companion application for **HELION**, the persistent, server-authoritat
 
 ---
 
+## Documentation
+
+- [Developer Guide](docs/commander/HELION_COMMANDER_DEVELOPER_GUIDE.md)
+- [User Guide](docs/commander/HELION_COMMANDER_USER_GUIDE.md)
+- [Commander Product Spec](docs/commander/HELION_COMMANDER_PRODUCT_SPEC.md)
+- [Server Integration Guide](docs/commander/HELION_COMMANDER_SERVER_INTEGRATION.md)
+
+---
+
 ## 1. Project Purpose & Core Architecture Principle
 
 HELION Commander is a tactical commander management, fleet outfitting, star system navigation, regional market analysis, and universe communications application designed to be used while away from the main game.
