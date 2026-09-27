@@ -11,6 +11,7 @@ import com.example.helion.core.model.MarketTransactionRequest
 import com.example.helion.core.model.MarketTransactionResult
 import com.example.helion.core.model.ModuleItem
 import com.example.helion.core.model.OwnedShipInstance
+import com.example.helion.core.model.ServerEndpoint
 import com.example.helion.core.model.ServerEnvironment
 import com.example.helion.core.model.ServerStatus
 import com.example.helion.core.model.ShipDefinition
@@ -31,9 +32,12 @@ class ServerUnavailableException(message: String) : Exception(message)
  */
 class RealCompanionApi(
     val environment: ServerEnvironment,
-    val baseUrl: String? = null,
-    val isConfigured: Boolean = false
+    val endpoint: ServerEndpoint? = null,
+    private val statusProbe: NativeServerStatusProbe = TlsNativeServerStatusProbe()
 ) : CompanionApi {
+
+    val isConfigured: Boolean
+        get() = endpoint != null
 
     init {
         require(environment != ServerEnvironment.DEMO) {
@@ -42,7 +46,7 @@ class RealCompanionApi(
     }
 
     private fun <T> notConfiguredFailure(operation: String): Result<T> {
-        val msg = if (!isConfigured || baseUrl.isNullOrBlank()) {
+        val msg = if (!isConfigured) {
             "SERVER NOT CONFIGURED: ${environment.displayName} has no verified endpoint."
         } else {
             "SERVER API NOT AVAILABLE: Operation '$operation' is not yet implemented on the authoritative ${environment.displayName} server."
@@ -60,14 +64,10 @@ class RealCompanionApi(
     }
 
     override suspend fun getServerStatus(): Result<ServerStatus> {
-        if (!isConfigured || baseUrl.isNullOrBlank()) {
-            return Result.failure(
-                ServerNotConfiguredException("SERVER NOT CONFIGURED: ${environment.displayName} has no verified endpoint.")
-            )
-        }
-        return Result.failure(
-            ServerUnavailableException("SERVER API NOT AVAILABLE: Status probe endpoint is not yet connected for ${environment.displayName}.")
+        val configuredEndpoint = endpoint ?: return Result.failure(
+            ServerNotConfiguredException("SERVER NOT CONFIGURED: ${environment.displayName} has no verified endpoint.")
         )
+        return statusProbe.probe(environment, configuredEndpoint)
     }
 
     // Commander
